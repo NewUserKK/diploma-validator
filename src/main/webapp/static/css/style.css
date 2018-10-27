@@ -1,20 +1,23 @@
 .text {
-    overflow: scroll !important;
+    display: block;
+    overflow: auto;
     margin-bottom: 30px;
-    margin-right: -30px;
-    padding-bottom: 30px;
-    height: 80%;
-    width: 100%;
+    margin-left: 2.5%;
+    margin-right: 2.5%;
+    height: 40rem;
+    width: 95%;
     outline: none;
+
 }
 
 .buttons {
     display: flex;
+    justify-content: space-between;
+    padding-right: 30%;
+    padding-left: 30%;
+    margin-bottom: 50px;
 }
 
-.buttons .FindDiff {
-    padding-left: 50px;
-}
 
 .download {
     margin-left: 30px;
