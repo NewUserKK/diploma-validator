@@ -100,6 +100,10 @@ public class Parser {
         checkStructuralElements();
     }
 
+    /*
+     * TODO: add dot check in the end
+     * TODO: add lower/upper check
+     */
     private void checkStructuralElements() {
         Map<StructuralElement, Boolean> structuralElementsCheck = new HashMap<>() {{
             for (var item: StructuralElement.values()) {
@@ -152,8 +156,10 @@ public class Parser {
     private void parseEnumerations() {
         var paragraphs = document.getParagraphs();
 
+        var previousLine = "";
         for (int i = 0; i < paragraphs.size(); i++) {
             var paragraph = paragraphs.get(i);
+
 
         }
     }
