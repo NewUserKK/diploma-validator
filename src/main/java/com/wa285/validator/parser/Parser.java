@@ -3,18 +3,19 @@ package com.wa285.validator.parser;
 import com.wa285.validator.parser.errors.Error;
 import com.wa285.validator.parser.errors.Location;
 import com.wa285.validator.parser.errors.critical.*;
+import com.wa285.validator.parser.errors.critical.enumeration.EnumerationNumberingError;
+import com.wa285.validator.parser.errors.critical.structural.StructuralElementCenteringError;
+import com.wa285.validator.parser.errors.critical.structural.StructuralElementMissingBoldError;
+import com.wa285.validator.parser.errors.critical.structural.StructuralElementStyleError;
 import com.wa285.validator.parser.errors.warning.MissingStructuralElementError;
 import org.apache.poi.xwpf.usermodel.ParagraphAlignment;
 import org.apache.poi.xwpf.usermodel.XWPFDocument;
-import org.openxmlformats.schemas.wordprocessingml.x2006.main.CTBody;
-import org.openxmlformats.schemas.wordprocessingml.x2006.main.STPageOrientation;
 
 import java.io.*;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import static com.wa285.validator.parser.ElementSize.*;
@@ -140,7 +141,7 @@ public class Parser {
             if (structuralElement != null) {
                 structuralElementsCheck.put(structuralElement, true);
                 if (paragraph.getAlignment() != ParagraphAlignment.CENTER) {
-                    errors.add(new StructuralElementStyleError(
+                    errors.add(new StructuralElementCenteringError(
                             structuralElement, "is not centered",
                             new Location(i, 0, paragraph.getText().length())
                     ));
@@ -152,7 +153,7 @@ public class Parser {
                     var run = runs.get(j);
                     var textEnd = textStart + run.text().length();
                     if (!run.isBold()) {
-                        errors.add(new StructuralElementStyleError(
+                        errors.add(new StructuralElementMissingBoldError(
                                 structuralElement, "should be bold!",
                                 new Location(i, textStart, textEnd, j)
                         ));
@@ -224,7 +225,7 @@ public class Parser {
 
                 } else if (prevType == DIGIT) {
                     if (Integer.parseInt(currentDigit) - 1 != Integer.parseInt(prevStart)) {
-                        errors.add(new EnumerationCriticalError(
+                        errors.add(new EnumerationNumberingError(
                                 "Inconsistent numering",
                                 new Location(i, 0, line.length())
                         ));
@@ -234,7 +235,7 @@ public class Parser {
                 } else if (prevType == DASH) {
                     // TODO: complex lists
                 } else if (prevType == LETTER) {
-                    errors.add(new EnumerationCriticalError(
+                    errors.add(new EnumerationNumberingError(
                             "Inconsistent enum type",
                             new Location(i,0, line.length())
                     ));
