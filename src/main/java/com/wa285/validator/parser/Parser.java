@@ -80,7 +80,6 @@ public class Parser {
         }
 
         var pageSize = document.getDocument().getBody().getSectPr().getPgSz();
-        var documentOrientation = pageSize.getOrient();
         var documentWidth = pageSize.getW().intValue();
         var documentHeight = pageSize.getH().intValue();
 
