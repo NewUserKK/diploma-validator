@@ -4,6 +4,7 @@ import com.wa285.validator.parser.errors.Error;
 import com.wa285.validator.parser.errors.Location;
 import com.wa285.validator.parser.errors.critical.FieldSizeCriticalError;
 import com.wa285.validator.parser.errors.critical.DocumentFormatCriticalError;
+import com.wa285.validator.parser.errors.critical.StructuralElementStyleError;
 import com.wa285.validator.parser.errors.warning.MissingStructuralElementError;
 import org.apache.poi.xwpf.usermodel.ParagraphAlignment;
 import org.apache.poi.xwpf.usermodel.XWPFDocument;
@@ -116,7 +117,15 @@ public class Parser {
             if (structuralElement != null) {
                 structuralElementsCheck.put(structuralElement, true);
                 if (paragraph.getAlignment() != ParagraphAlignment.CENTER) {
-//                    errors.add()
+                    errors.add(new StructuralElementStyleError(
+                            structuralElement, "is not centered", new Location()
+                    ));
+                }
+                assert paragraph.getRuns().size() == 1;
+                if (!paragraph.getRuns().get(0).isBold()) {
+                    errors.add(new StructuralElementStyleError(
+                            structuralElement, "should be bold!", new Location()
+                    ));
                 }
             }
         }
