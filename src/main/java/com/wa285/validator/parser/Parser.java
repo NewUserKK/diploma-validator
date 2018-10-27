@@ -63,19 +63,19 @@ public class Parser {
         var bottomMargin = margin.getBottom().intValue();
 
         if (!LEFT_MARGIN.value().contains(leftMargin)) {
-            errors.add(new FieldSizeError("Левое поле должно быть равно 30 мм", null));
+            errors.add(new FieldSizeError("Левое поле должно быть равно 30 мм: " + leftMargin * 0.017638889 + " мм здесь", null));
         }
 
         if (!RIGHT_MARGIN.value().contains(rightMargin)) {
-            errors.add(new FieldSizeError("Правое поле должно быть равно 15 мм", null));
+            errors.add(new FieldSizeError("Правое поле должно быть равно 15 мм: " + rightMargin * 0.017638889 + " мм здесь", null));
         }
 
         if (!TOP_MARGIN.value().contains(topMargin)) {
-            errors.add(new FieldSizeError("Верхнее поле должно быть равно 20 мм", null));
+            errors.add(new FieldSizeError("Верхнее поле должно быть равно 20 мм: " + topMargin * 0.017638889 + " мм здесь", null));
         }
 
         if (!BOTTOM_MARGIN.value().contains(bottomMargin)) {
-            errors.add(new FieldSizeError("Нижнее поле должно быть равно 20 мм", null));
+            errors.add(new FieldSizeError("Нижнее поле должно быть равно 20 мм: " + bottomMargin * 0.017638889 + " мм здесь", null));
         }
 
         var pageSize = document.getDocument().getBody().getSectPr().getPgSz();
@@ -87,7 +87,7 @@ public class Parser {
         }
 
         if (!DOCUMENT_HEIGHT.value().contains(documentHeight)) {
-            errors.add(new DocumentFormatError("ормат страниц должен быть вертикальный A4", null));
+            errors.add(new DocumentFormatError("Формат страниц должен быть вертикальный A4", null));
         }
 
         var paragraphs = document.getParagraphs();
@@ -101,11 +101,11 @@ public class Parser {
                 Location location = new Location(i, textStart, textEnd, j);
 
                 if (run.getColor() != null) {
-                    errors.add(new FontColorError("Шрифт должен быть чёрным", null));
+                    errors.add(new FontColorError("Шрифт должен быть чёрным: " + run.getColor() + " здесь", null));
                 }
 
-                if (run.getFontName() == null || !run.getFontName().equals("Times New Roman")) {
-                    errors.add(new FontStyleError("Шрифт должен быть Times New Roman", null));
+                if (run.getFontName() == null || !run.getFontFamily().equals("Times New Roman")) {
+                    errors.add(new FontStyleError("Шрифт должен быть Times New Roman: " + run.getFontFamily() + " здесь", null));
                 }
 
                 if (run.getFontSize() < 12) {
