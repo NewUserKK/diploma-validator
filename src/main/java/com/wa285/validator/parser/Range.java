@@ -20,6 +20,10 @@ public class Range
         this.center = center;
     }
 
+    public int getCenter() {
+        return center;
+    }
+
     public boolean contains(int number){
         return (number >= low && number <= high);
     }

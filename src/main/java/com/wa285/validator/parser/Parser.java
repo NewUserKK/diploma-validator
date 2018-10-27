@@ -6,7 +6,6 @@ import com.wa285.validator.parser.errors.critical.*;
 import com.wa285.validator.parser.errors.critical.enumeration.EnumerationNumberingError;
 import com.wa285.validator.parser.errors.critical.structural.StructuralElementCenteringError;
 import com.wa285.validator.parser.errors.critical.structural.StructuralElementMissingBoldError;
-import com.wa285.validator.parser.errors.critical.structural.StructuralElementStyleError;
 import com.wa285.validator.parser.errors.warning.MissingStructuralElementError;
 import org.apache.poi.xwpf.usermodel.ParagraphAlignment;
 import org.apache.poi.xwpf.usermodel.XWPFDocument;
@@ -64,19 +63,19 @@ public class Parser {
         var bottomMargin = margin.getBottom().intValue();
 
         if (!LEFT_MARGIN.value().contains(leftMargin)) {
-            errors.add(new FieldSizeCriticalError("LeftFieldSizeCriticalError", null));
+            errors.add(new FieldSizeError("LeftFieldSizeCriticalError", null));
         }
 
         if (!RIGHT_MARGIN.value().contains(rightMargin)) {
-            errors.add(new FieldSizeCriticalError("RightFieldSizeCriticalError", null));
+            errors.add(new FieldSizeError("RightFieldSizeCriticalError", null));
         }
 
         if (!TOP_MARGIN.value().contains(topMargin)) {
-            errors.add(new FieldSizeCriticalError("TopFieldSizeCriticalError", null));
+            errors.add(new FieldSizeError("TopFieldSizeCriticalError", null));
         }
 
         if (!BOTTOM_MARGIN.value().contains(bottomMargin)) {
-            errors.add(new FieldSizeCriticalError("BottomFieldSizeCriticalError", null));
+            errors.add(new FieldSizeError("BottomFieldSizeCriticalError", null));
         }
 
         var pageSize = document.getDocument().getBody().getSectPr().getPgSz();
@@ -84,11 +83,11 @@ public class Parser {
         var documentHeight = pageSize.getH().intValue();
 
         if (!DOCUMENT_WIDTH.value().contains(documentWidth)) {
-            errors.add(new DocumentFormatCriticalError("WidthDocumentFormatCriticalError", null));
+            errors.add(new DocumentFormatError("WidthDocumentFormatCriticalError", null));
         }
 
         if (!DOCUMENT_HEIGHT.value().contains(documentHeight)) {
-            errors.add(new DocumentFormatCriticalError("HeightDocumentFormatCriticalError", null));
+            errors.add(new DocumentFormatError("HeightDocumentFormatCriticalError", null));
         }
 
         var paragraphs = document.getParagraphs();
@@ -102,15 +101,15 @@ public class Parser {
                 Location location = new Location(i, textStart, textEnd, j);
 
                 if (run.getColor() != null) {
-                    errors.add(new FontColorCriticalError("Font must be black", null));
+                    errors.add(new FontColorError("Font must be black", null));
                 }
 
                 if (run.getFontName() == null || !run.getFontName().equals("Times New Roman")) {
-                    errors.add(new FontStyleCriticalError("Font must be \"Times New Roman\"", null));
+                    errors.add(new FontStyleError("Font must be \"Times New Roman\"", null));
                 }
 
                 if (run.getFontSize() < 12) {
-                    errors.add(new FontSizeCriticalError("Font size must be not less than 12pt", location));
+                    errors.add(new FontSizeError("Font size must be not less than 12pt", location));
                 }
 
                 textStart = textEnd;
