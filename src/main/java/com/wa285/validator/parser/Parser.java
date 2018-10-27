@@ -14,6 +14,8 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import static com.wa285.validator.parser.ElementSize.*;
 
@@ -175,14 +177,84 @@ public class Parser {
     }
 
     private void parseEnumerations() {
+        // TODO: nested enumerations
+        // TODO: complex numbering (1.1. ...)
+        // TODO: numbering from zero
+
+        final var NONE = 0;
+        final var DASH = 1;
+        final var DIGIT = 2;
+        final var LETTER = 3;
+
+        final var dashPattern = Pattern.compile("^\\p{Space}*- .*$");  // matches -
+        final var digitPattern = Pattern.compile("^\\p{Space}*[1-9]\\d*\\) .*$");  // matches xy...)
+        final var letterPattern = Pattern.compile("^\\p{Space}*([а-я]) .*$");  // matches x)
+
+        final var forbiddenLetters = new ArrayList<>() {{
+                add('ё');
+                add('з');
+                add('й');
+                add('о');
+                add('ч');
+                add('ъ');
+                add('ы');
+                add('ь');
+        }};
+
         var paragraphs = document.getParagraphs();
 
-        var previousLine = "";
+        // TODO: - and big '-'
+        var prevLine = "";
+        var prevType = NONE;
+        var prevStart = "";
         for (int i = 0; i < paragraphs.size(); i++) {
             var paragraph = paragraphs.get(i);
+            var line = paragraph.getText();
 
+            if (line.startsWith("-") && prevLine.startsWith("-")) {
+                prevType = DASH;
+                // TODO: check ,/;
+            } else if (digitPattern.matcher(line).matches()) {  // it's a digit enum
+                var split = line.split("\\)");
+                var currentDigit = split[0];
+                // TODO: check better, through regex?
+                if (prevType == NONE) {
+                    prevType = DIGIT;
+                    prevStart = currentDigit;
 
+                } else if (prevType == DIGIT) {
+                    if (Integer.parseInt(currentDigit) - 1 != Integer.parseInt(prevStart)) {
+                        errors.add(new EnumerationCriticalError(
+                                "Inconsistent numering",
+                                new Location(i, 0, line.length())
+                        ));
+                    }
+                    prevStart = currentDigit;
+
+                } else if (prevType == DASH) {
+                    // TODO: complex lists
+                } else if (prevType == LETTER) {
+                    errors.add(new EnumerationCriticalError(
+                            "Inconsistent enum type",
+                            new Location(i,0, line.length())
+                    ));
+                } else {
+                    throw new IllegalArgumentException("Unknown enum type");
+                }
+            } else if (letterPattern.matcher(line).matches()) {  // it's a letter enum
+                var split = line.split("\\)");
+                var currentLetter = split[0];
+                assert currentLetter.length() == 1;
+                var currentChar = currentLetter.charAt(0);
+                if (forbiddenLetters.contains(currentChar)) {
+//                    TODO: errors.add(new )
+                } else {
+//                    if (currentChar ) {
+//
+//                    }
+                }
+                prevLine = line;
+            }
         }
     }
-
 }
