@@ -2,9 +2,7 @@ package com.wa285.validator.parser;
 
 import com.wa285.validator.parser.errors.Error;
 import com.wa285.validator.parser.errors.Location;
-import com.wa285.validator.parser.errors.critical.FieldSizeCriticalError;
-import com.wa285.validator.parser.errors.critical.DocumentFormatCriticalError;
-import com.wa285.validator.parser.errors.critical.StructuralElementStyleError;
+import com.wa285.validator.parser.errors.critical.*;
 import com.wa285.validator.parser.errors.warning.MissingStructuralElementError;
 import org.apache.poi.xwpf.usermodel.ParagraphAlignment;
 import org.apache.poi.xwpf.usermodel.XWPFDocument;
@@ -82,13 +80,8 @@ public class Parser {
         }
 
         var pageSize = document.getDocument().getBody().getSectPr().getPgSz();
-        var documentOrientation = pageSize.getOrient();
         var documentWidth = pageSize.getW().intValue();
         var documentHeight = pageSize.getH().intValue();
-
-        if (documentOrientation != STPageOrientation.Enum.forInt(2)) {
-            errors.add(new DocumentFormatCriticalError("A4", null));
-        }
 
         if (!DOCUMENT_WIDTH.value().contains(documentWidth)) {
             errors.add(new DocumentFormatCriticalError("WidthDocumentFormatCriticalError", null));
@@ -98,12 +91,42 @@ public class Parser {
             errors.add(new DocumentFormatCriticalError("HeightDocumentFormatCriticalError", null));
         }
 
+        var paragraphs = document.getParagraphs();
+        for (int i = 0; i < paragraphs.size(); i++) {
+            var textStart = 0;
+
+            for (var run : paragraphs.get(i).getRuns()) {
+                var textEnd = textStart + run.toString().length();
+                Location location = new Location(i, textStart, textEnd);
+
+                if (run.getColor() != null) {
+                    errors.add(new FontColorCriticalError("Font must be black", null));
+                }
+
+                if (run.getFontName() == null || !run.getFontName().equals("Times New Roman")) {
+                    errors.add(new FontStyleCriticalError("Font must be \"Times New Roman\"", null));
+                }
+
+                if (run.getFontSize() < 12) {
+                    errors.add(new FontSizeCriticalError("Font size must be not less than 12pt", location));
+                }
+
+                textStart = textEnd;
+            }
+        }
+
+
+
     }
 
     private void checkNumeration() {
         checkStructuralElements();
     }
 
+    /*
+     * TODO: add dot check in the end
+     * TODO: add lower/upper check
+     */
     private void checkStructuralElements() {
         Map<StructuralElement, Boolean> structuralElementsCheck = new HashMap<>() {{
             for (var item: StructuralElement.values()) {
@@ -115,23 +138,30 @@ public class Parser {
         for (int i = 0; i < paragraphs.size(); i++) {
             var paragraph = paragraphs.get(i);
             var structuralElement = getStructuralElement(paragraph.getText());
+
             if (structuralElement != null) {
                 structuralElementsCheck.put(structuralElement, true);
-                assert paragraph.getRuns().size() == 1;
                 if (paragraph.getAlignment() != ParagraphAlignment.CENTER) {
                     errors.add(new StructuralElementStyleError(
                             structuralElement, "is not centered",
                             new Location(i, 0, paragraph.getText().length())
                     ));
                 }
-                if (!paragraph.getRuns().get(0).isBold()) {
-                    errors.add(new StructuralElementStyleError(
-                            structuralElement, "should be bold!",
-                            new Location(i, 0, paragraph.getText().length())
-                    ));
+
+                var textStart = 0;
+                for (var run: paragraph.getRuns()) {
+                    var textEnd = textStart + run.text().length();
+                    if (!run.isBold()) {
+                        errors.add(new StructuralElementStyleError(
+                                structuralElement, "should be bold!",
+                                new Location(i, textStart, textStart + textEnd)
+                        ));
+                    }
+                    textStart += textEnd;
                 }
             }
         }
+
         for (var item: structuralElementsCheck.keySet()) {
             errors.add(new MissingStructuralElementError(item, null));
         }
@@ -144,6 +174,17 @@ public class Parser {
             }
         }
         return null;
+    }
+
+    private void parseEnumerations() {
+        var paragraphs = document.getParagraphs();
+
+        var previousLine = "";
+        for (int i = 0; i < paragraphs.size(); i++) {
+            var paragraph = paragraphs.get(i);
+
+
+        }
     }
 
 }
