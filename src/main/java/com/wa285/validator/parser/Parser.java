@@ -63,19 +63,19 @@ public class Parser {
         var bottomMargin = margin.getBottom().intValue();
 
         if (!LEFT_MARGIN.value().contains(leftMargin)) {
-            errors.add(new FieldSizeError("LeftFieldSizeCriticalError", null));
+            errors.add(new FieldSizeError("Левое поле должно быть равно 30 мм", null));
         }
 
         if (!RIGHT_MARGIN.value().contains(rightMargin)) {
-            errors.add(new FieldSizeError("RightFieldSizeCriticalError", null));
+            errors.add(new FieldSizeError("Правое поле должно быть равно 15 мм", null));
         }
 
         if (!TOP_MARGIN.value().contains(topMargin)) {
-            errors.add(new FieldSizeError("TopFieldSizeCriticalError", null));
+            errors.add(new FieldSizeError("Верхнее поле должно быть равно 20 мм", null));
         }
 
         if (!BOTTOM_MARGIN.value().contains(bottomMargin)) {
-            errors.add(new FieldSizeError("BottomFieldSizeCriticalError", null));
+            errors.add(new FieldSizeError("Нижнее поле должно быть равно 20 мм", null));
         }
 
         var pageSize = document.getDocument().getBody().getSectPr().getPgSz();
@@ -83,11 +83,11 @@ public class Parser {
         var documentHeight = pageSize.getH().intValue();
 
         if (!DOCUMENT_WIDTH.value().contains(documentWidth)) {
-            errors.add(new DocumentFormatError("WidthDocumentFormatCriticalError", null));
+            errors.add(new DocumentFormatError("Формат страниц должен быть вертикальный A4", null));
         }
 
         if (!DOCUMENT_HEIGHT.value().contains(documentHeight)) {
-            errors.add(new DocumentFormatError("HeightDocumentFormatCriticalError", null));
+            errors.add(new DocumentFormatError("ормат страниц должен быть вертикальный A4", null));
         }
 
         var paragraphs = document.getParagraphs();
@@ -101,15 +101,15 @@ public class Parser {
                 Location location = new Location(i, textStart, textEnd, j);
 
                 if (run.getColor() != null) {
-                    errors.add(new FontColorError("Font must be black", null));
+                    errors.add(new FontColorError("Шрифт должен быть чёрным", null));
                 }
 
                 if (run.getFontName() == null || !run.getFontName().equals("Times New Roman")) {
-                    errors.add(new FontStyleError("Font must be \"Times New Roman\"", null));
+                    errors.add(new FontStyleError("Шрифт должен быть Times New Roman", null));
                 }
 
                 if (run.getFontSize() < 12) {
-                    errors.add(new FontSizeError("Font size must be not less than 12pt", location));
+                    errors.add(new FontSizeError("Размер шрифта должен быть не меньше 12 пт", location));
                 }
 
                 textStart = textEnd;
@@ -141,7 +141,7 @@ public class Parser {
                 structuralElementsCheck.put(structuralElement, true);
                 if (paragraph.getAlignment() != ParagraphAlignment.CENTER) {
                     errors.add(new StructuralElementCenteringError(
-                            structuralElement, "is not centered",
+                            structuralElement, "Должно быть по центру",
                             new Location(i, 0, paragraph.getText().length())
                     ));
                 }
@@ -153,7 +153,7 @@ public class Parser {
                     var textEnd = textStart + run.text().length();
                     if (!run.isBold()) {
                         errors.add(new StructuralElementMissingBoldError(
-                                structuralElement, "should be bold!",
+                                structuralElement, "Шрифт должен быть жирным",
                                 new Location(i, textStart, textEnd, j)
                         ));
                     }
@@ -225,7 +225,7 @@ public class Parser {
                 } else if (prevType == DIGIT) {
                     if (Integer.parseInt(currentDigit) - 1 != Integer.parseInt(prevStart)) {
                         errors.add(new EnumerationNumberingError(
-                                "Inconsistent numering",
+                                "Нумрация должжна быть последовательной",
                                 new Location(i, 0, line.length())
                         ));
                     }

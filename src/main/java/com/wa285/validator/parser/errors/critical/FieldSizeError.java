@@ -1,6 +1,5 @@
 package com.wa285.validator.parser.errors.critical;
 
-import com.wa285.validator.parser.ElementSize;
 import com.wa285.validator.parser.errors.Location;
 import org.apache.poi.xwpf.usermodel.XWPFRun;
 
