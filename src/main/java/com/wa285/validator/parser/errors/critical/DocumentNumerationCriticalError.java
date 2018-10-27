@@ -2,9 +2,9 @@ package com.wa285.validator.parser.errors.critical;
 
 import com.wa285.validator.parser.errors.Location;
 
-public class PictureNumerationCriticalError extends Critical {
+public class DocumentNumerationCriticalError extends Critical {
 
-    public PictureNumerationCriticalError(String description, Location location) {
+    public DocumentNumerationCriticalError(String description, Location location) {
         super(description, location);
     }
 }
