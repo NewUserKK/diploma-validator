@@ -84,10 +84,6 @@ public class Parser {
         var documentWidth = pageSize.getW().intValue();
         var documentHeight = pageSize.getH().intValue();
 
-        if (documentOrientation != STPageOrientation.Enum.forInt(2)) {
-            errors.add(new DocumentFormatCriticalError("A4", null));
-        }
-
         if (!DOCUMENT_WIDTH.value().contains(documentWidth)) {
             errors.add(new DocumentFormatCriticalError("WidthDocumentFormatCriticalError", null));
         }
@@ -137,23 +133,30 @@ public class Parser {
         for (int i = 0; i < paragraphs.size(); i++) {
             var paragraph = paragraphs.get(i);
             var structuralElement = getStructuralElement(paragraph.getText());
+
             if (structuralElement != null) {
                 structuralElementsCheck.put(structuralElement, true);
-                assert paragraph.getRuns().size() == 1;
                 if (paragraph.getAlignment() != ParagraphAlignment.CENTER) {
                     errors.add(new StructuralElementStyleError(
                             structuralElement, "is not centered",
                             new Location(i, 0, paragraph.getText().length())
                     ));
                 }
-                if (!paragraph.getRuns().get(0).isBold()) {
-                    errors.add(new StructuralElementStyleError(
-                            structuralElement, "should be bold!",
-                            new Location(i, 0, paragraph.getText().length())
-                    ));
+
+                var textStart = 0;
+                for (var run: paragraph.getRuns()) {
+                    var textEnd = textStart + run.text().length();
+                    if (!run.isBold()) {
+                        errors.add(new StructuralElementStyleError(
+                                structuralElement, "should be bold!",
+                                new Location(i, textStart, textStart + textEnd)
+                        ));
+                    }
+                    textStart += textEnd;
                 }
             }
         }
+
         for (var item: structuralElementsCheck.keySet()) {
             errors.add(new MissingStructuralElementError(item, null));
         }
@@ -166,6 +169,15 @@ public class Parser {
             }
         }
         return null;
+    }
+
+    private void parseEnumerations() {
+        var paragraphs = document.getParagraphs();
+
+        for (int i = 0; i < paragraphs.size(); i++) {
+            var paragraph = paragraphs.get(i);
+
+        }
     }
 
 }
