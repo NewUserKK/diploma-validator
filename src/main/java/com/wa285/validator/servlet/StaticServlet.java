@@ -13,46 +13,15 @@ import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.*;
-import java.lang.reflect.Array;
-import java.nio.channels.FileChannel;
 import java.nio.file.Files;
-import java.util.ArrayList;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Random;
+import java.util.stream.Collectors;
 
 
 public class StaticServlet extends HttpServlet {
 
     private static int number = 1;
-    private String begin = "<!DOCTYPE html>\n" +
-            "<head>\n" +
-            "    <meta charset=\"utf-8\">\n" +
-            "    <link rel=\"stylesheet\" type=\"text/css\" href=\"css/style.css\">\n" +
-            "    <title>Пример создания поля загрузки файлов</title>\n" +
-            "</head>\n" +
-            "<body>\n" +
-            "    <div class=\"text\" tabindex=\"-1\">";
-    private String end = "</div>\n" +
-            "    <div class=\"buttons\">\n" +
-            "        <form method=\"post\" enctype=\"multipart/form-data\">\n" +
-            "            <input name=\"user-file\" type=\"file\">\n" +
-            "            <input type=\"submit\" value=\"Отправить\">\n" +
-            "        </form>\n" +
-            "        <!--<div class=\"FindDiff\">\n" +
-            "            <input type=\"submit\" value=\"Find diff\">\n" +
-            "        </div>-->\n" +
-            "\n" +
-            "        <div class=\"download\">\n" +
-            "            <!--<form method=\"get\" action=\"img/comments_16x16.png\">-->\n" +
-            "                <!--<button type=\"submit\">Скачать</button>-->\n" +
-            "            <!--</form>-->\n" +
-            "            <!--<a href=\"img/comments_16x16.png\" download>Скачать файл</a>-->\n" +
-            "            <!--<input type=\"button\" onclick=\"location\" href=\"img/comments_16x16.png\" value=\"Скачать\">-->\n" +
-            "            <button type=\"submit\" onclick=\"window.open('img/logo.png')\">Download!</button>\n" +
-            "        </div>\n" +
-            "    </div>\n" +
-            "</body>\n";
 
     @Override
     protected void doGet(HttpServletRequest request, HttpServletResponse response) throws IOException {
@@ -85,16 +54,9 @@ public class StaticServlet extends HttpServlet {
         outputStream.flush();
     }
 
-    private Random random = new Random();
 
     @Override
     protected void doPost(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
-        /*//проверяем является ли полученный запрос multipart/form-data
-        boolean isMultipart = ServletFileUpload.isMultipartContent(request);
-        if (!isMultipart) {
-            response.sendError(HttpServletResponse.SC_BAD_REQUEST);
-            return;
-        }*/
 
         // Создаём класс фабрику
         DiskFileItemFactory factory = new DiskFileItemFactory();
@@ -112,38 +74,26 @@ public class StaticServlet extends HttpServlet {
         ServletFileUpload upload = new ServletFileUpload(factory);
 
         //максимальный размер данных который разрешено загружать в байтах
-        //по умолчанию -1, без ограничений. Устанавливаем 10 мегабайт.
         upload.setSizeMax(1024 * 1024 * 100);
 
         try {
-            List items = upload.parseRequest(request);
+            FileItem item = upload.parseRequest(request).get(0);
 
-            for (Object item1 : items) {
-                FileItem item = (FileItem) item1;
+            File uploadedFile = processUploadedFile(item);
+            List<Error> errors = findErrors(uploadedFile);
+            BufferedWriter writeHtml = new BufferedWriter(new FileWriter(getServletContext().getRealPath("/static/textErrors.html")));
 
-                if (item.isFormField()) {
-                    //если принимаемая часть данных является полем формы
-                    processFormField(item);
-                } else {
-                    //в противном случае рассматриваем как файл
-                    File uploadedFile = processUploadedFile(item);
-                    List<Error> errors = findErrors(uploadedFile);
-                    File textErrors = new File("/media/damtev/Storage/Hackathon/server/diploma-validator/" +
-                            "src/main/webapp/static/textErrors.html");
-                    BufferedWriter writeHtml = new BufferedWriter(new FileWriter("/media/damtev/Storage/Hackathon/server/diploma-validator/" +
-                            "target/validator/static/textErrors.html"));
-                    writeHtml.write(begin);
-                    for (Error error : errors) {
-                        writeHtml.write(error.toString() + "<br>");
-                    }
-                    writeHtml.write(end);
-                    writeHtml.close();
-
-                    OutputStream outputStream = response.getOutputStream();
-                    File file = new File(getServletContext().getRealPath("/static/textErrors.html"));
-                    Files.copy(file.toPath(), outputStream);
-                }
+            var begin_end = new BufferedReader(new InputStreamReader(new FileInputStream(new File(getServletContext().getRealPath("/static/index.html"))))).lines().collect(Collectors.joining("")).split("<!--Docx_to-->");
+            writeHtml.write(begin_end[0]);
+            for (Error error : errors) {
+                writeHtml.write(error.toString() + "<br>");
             }
+            writeHtml.write(begin_end[1]);
+            writeHtml.close();
+
+            OutputStream outputStream = response.getOutputStream();
+            File file = new File(getServletContext().getRealPath("/static/textErrors.html"));
+            Files.copy(file.toPath(), outputStream);
 
         } catch (Exception e) {
             e.printStackTrace();
@@ -155,13 +105,6 @@ public class StaticServlet extends HttpServlet {
         return new Parser(file).findErrors();
     }
 
-    /**
-     * Сохраняет файл на сервере, в папке upload.
-     * Сама папка должна быть уже создана.
-     *
-     * @param item
-     * @throws Exception
-     */
     private File processUploadedFile(FileItem item) throws Exception {
         File uploadedFile = null;
         //выбираем файлу имя пока не найдём свободное
@@ -175,15 +118,6 @@ public class StaticServlet extends HttpServlet {
         //записываем в него данные
         item.write(uploadedFile);
         return uploadedFile;
-    }
-
-    /**
-     * Выводит на консоль имя параметра и значение
-     *
-     * @param item
-     */
-    private void processFormField(FileItem item) {
-        System.out.println(item.getFieldName() + "=" + item.getString());
     }
 
     private String getContentTypeFromName(String name) {
