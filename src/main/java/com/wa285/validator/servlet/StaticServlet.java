@@ -106,12 +106,17 @@ public class StaticServlet extends HttpServlet {
             }
 
             for (int i = 0; i < paragraphs.length; i++) {
+                boolean wasFontSizeError = false;
                 if (paragraphs[i].isEmpty())
                     continue;
                 writeHtml.write(paragraphs[i] + "<br>");
                 if (!errors_by_paragraph.get(i).isEmpty()) {
                     for (var error : errors_by_paragraph.get(i)) {
-                        writeHtml.write(error.toString() + "<br>");
+                        if (error.description.equals("Font size must be not less than 12pt") && wasFontSizeError)
+                            continue;
+                        writeHtml.write("<font color=\"red\">" + error.description + "</font><br>");
+                        if (error.description.equals("Font size must be not less than 12pt"))
+                            wasFontSizeError = true;
                     }
                 }
                 writeHtml.write("<br><br>");
@@ -119,7 +124,7 @@ public class StaticServlet extends HttpServlet {
             }
 
             writeHtml.write("There're some common errors:<br>");
-            for(var error: common_error)
+            for (var error : common_error)
                 writeHtml.write(error + "<br>");
 
             writeHtml.write(begin_end[1]);
