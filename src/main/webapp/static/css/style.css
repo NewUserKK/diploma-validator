@@ -1,0 +1,28 @@
+body {
+    background-color: wheat;
+}
+
+.text {
+    display: block;
+    overflow: auto;
+    margin-bottom: 30px;
+    margin-left: 2.5%;
+    margin-right: 2.5%;
+    height: 20rem;
+    width: 95%;
+    outline: none;
+    background-color: white;
+}
+
+.buttons {
+    display: flex;
+    justify-content: space-between;
+    padding-right: 30%;
+    padding-left: 30%;
+    margin-bottom: 50px;
+}
+
+
+.download {
+    margin-left: 30px;
+}
