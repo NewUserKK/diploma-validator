@@ -4,6 +4,7 @@ import com.wa285.validator.parser.errors.Error;
 import com.wa285.validator.parser.errors.Location;
 import com.wa285.validator.parser.errors.critical.FieldSizeCriticalError;
 import com.wa285.validator.parser.errors.critical.DocumentFormatCriticalError;
+import com.wa285.validator.parser.errors.critical.StructuralElementStyleError;
 import com.wa285.validator.parser.errors.warning.MissingStructuralElementError;
 import org.apache.poi.xwpf.usermodel.ParagraphAlignment;
 import org.apache.poi.xwpf.usermodel.XWPFDocument;
@@ -64,22 +65,18 @@ public class Parser {
         var topMargin = margin.getTop().intValue();
         var bottomMargin = margin.getBottom().intValue();
 
-//        if (leftMargin != LEFT_MARGIN.value()) {
         if (!LEFT_MARGIN.value().contains(leftMargin)) {
             errors.add(new FieldSizeCriticalError("LeftFieldSizeCriticalError", null));
         }
 
-//        if (rightMargin != RIGHT_MARGIN.value()) {
         if (!RIGHT_MARGIN.value().contains(rightMargin)) {
             errors.add(new FieldSizeCriticalError("RightFieldSizeCriticalError", null));
         }
 
-//        if (topMargin != TOP_MARGIN.value()) {
         if (!TOP_MARGIN.value().contains(topMargin)) {
             errors.add(new FieldSizeCriticalError("TopFieldSizeCriticalError", null));
         }
 
-//        if (bottomMargin != BOTTOM_MARGIN.value()) {
         if (!BOTTOM_MARGIN.value().contains(bottomMargin)) {
             errors.add(new FieldSizeCriticalError("BottomFieldSizeCriticalError", null));
         }
@@ -93,12 +90,10 @@ public class Parser {
             errors.add(new DocumentFormatCriticalError("A4", null));
         }
 
-//        if (documentWidth != DOCUMENT_WIDTH.value()) {
         if (!DOCUMENT_WIDTH.value().contains(documentWidth)) {
             errors.add(new DocumentFormatCriticalError("WidthDocumentFormatCriticalError", null));
         }
 
-//        if (documentHeight != DOCUMENT_HEIGHT.value()) {
         if (!DOCUMENT_HEIGHT.value().contains(documentHeight)) {
             errors.add(new DocumentFormatCriticalError("HeightDocumentFormatCriticalError", null));
         }
@@ -109,25 +104,36 @@ public class Parser {
         checkStructuralElements();
     }
 
-    Map<StructuralElement, Boolean> structuralElementsCheck = new HashMap<>() {{
-        for (var item: StructuralElement.values()) {
-            put(item, false);
-        }
-    }};
-
     private void checkStructuralElements() {
+        Map<StructuralElement, Boolean> structuralElementsCheck = new HashMap<>() {{
+            for (var item: StructuralElement.values()) {
+                put(item, false);
+            }
+        }};
+
         var paragraphs = document.getParagraphs();
-        for (var paragraph: paragraphs) {
+        for (int i = 0; i < paragraphs.size(); i++) {
+            var paragraph = paragraphs.get(i);
             var structuralElement = getStructuralElement(paragraph.getText());
             if (structuralElement != null) {
                 structuralElementsCheck.put(structuralElement, true);
+                assert paragraph.getRuns().size() == 1;
                 if (paragraph.getAlignment() != ParagraphAlignment.CENTER) {
-//                    errors.add()
+                    errors.add(new StructuralElementStyleError(
+                            structuralElement, "is not centered",
+                            new Location(i, 0, paragraph.getText().length())
+                    ));
+                }
+                if (!paragraph.getRuns().get(0).isBold()) {
+                    errors.add(new StructuralElementStyleError(
+                            structuralElement, "should be bold!",
+                            new Location(i, 0, paragraph.getText().length())
+                    ));
                 }
             }
         }
         for (var item: structuralElementsCheck.keySet()) {
-            errors.add(new MissingStructuralElementError(item, new Location()));
+            errors.add(new MissingStructuralElementError(item, null));
         }
     }
 

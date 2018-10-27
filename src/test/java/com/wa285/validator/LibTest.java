@@ -24,7 +24,7 @@ public class LibTest {
 
     public static void main(String[] args) throws IOException {
         var test = new LibTest();
-        var doc = test.getDocument("Test.docx");
+        var doc = test.getDocument("History.docx");
 //        var tokens = doc.getBodyElements();
 //        for (var token: tokens) {
 //            if (token.getElementType() == BodyElementType.PARAGRAPH) {
@@ -46,10 +46,18 @@ public class LibTest {
 //        out.close();
 //        for (int i = 0; i < 6; i++) {
 //            System.out.println(doc.getDocument().getBody().getSectPr().getPgNumType().getStart().intValue());
-//            System.out.println(doc.getDocument().getBody().getPArray(i));
+//            System.out.println(doc.getDocument().getBody().getPArray(2).;
 //
 //        }
-//        doc.getProperties().getExtendedProperties().getPages();
+//        for (var par: doc.getParagraphs()) {
+//            System.out.print(">>");
+//            for (var run: par.getRuns()) {
+//                System.out.print("[" + run.toString() + "]");
+//            }
+//            System.out.print(par.getText());
+//            System.out.println("<<");
+//        }
+        doc.getProperties().getExtendedProperties().getPages();
         var parser = new Parser(doc);
         System.out.println(parser.findErrors().stream().map(Object::toString)
                 .collect(Collectors.joining("\n")));
