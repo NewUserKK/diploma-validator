@@ -8,4 +8,9 @@ public abstract class Error {
         this.description = description;
         this.location = location;
     }
+
+    @Override
+    public String toString() {
+        return description;
+    }
 }
