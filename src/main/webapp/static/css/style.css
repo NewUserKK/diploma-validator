@@ -12,3 +12,8 @@
     /*position: relative;*/
     display: flex;
 }
+
+.buttons .FindDiff {
+    padding-left: 50px;
+
+}
