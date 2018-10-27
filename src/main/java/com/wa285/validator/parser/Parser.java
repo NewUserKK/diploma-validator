@@ -1,15 +1,20 @@
 package com.wa285.validator.parser;
 
 import com.wa285.validator.parser.errors.Error;
+import com.wa285.validator.parser.errors.Location;
 import com.wa285.validator.parser.errors.critical.FieldSizeCriticalError;
 import com.wa285.validator.parser.errors.critical.DocumentFormatCriticalError;
+import com.wa285.validator.parser.errors.warning.MissingStructuralElementError;
+import org.apache.poi.xwpf.usermodel.ParagraphAlignment;
 import org.apache.poi.xwpf.usermodel.XWPFDocument;
 import org.openxmlformats.schemas.wordprocessingml.x2006.main.CTBody;
 import org.openxmlformats.schemas.wordprocessingml.x2006.main.STPageOrientation;
 
 import java.io.*;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import static com.wa285.validator.parser.ElementSize.*;
 
@@ -17,7 +22,7 @@ import static com.wa285.validator.parser.ElementSize.*;
 public class Parser {
     private final List<Error> errors = new ArrayList<>();
     private final XWPFDocument document;
-    private final CTBody body;
+    private boolean parsed;
 
     public Parser(File file) throws IOException {
         this(new FileInputStream(file));
@@ -31,13 +36,25 @@ public class Parser {
                     e.getMessage());
             throw e;
         }
-        body = document.getDocument().getBody();
 
         parse();
     }
 
+    public Parser(XWPFDocument document) {
+        this.document = document;
+    }
+
+    public List<Error> findErrors() {
+        if (!parsed) {
+            parse();
+        }
+        return errors;
+    }
+
     private void parse() {
         checkFormat();
+        checkNumeration();
+        this.parsed = true;
     }
 
     private void checkFormat() {
@@ -80,16 +97,41 @@ public class Parser {
             errors.add(new DocumentFormatCriticalError("HeightDocumentFormatCriticalError", null));
         }
 
-
-
-
     }
 
-    private void parseNumeration() {
-
+    private void checkNumeration() {
+        checkStructuralElements();
     }
 
-    private void parseStructural() {
+    Map<StructuralElement, Boolean> structuralElementsCheck = new HashMap<>() {{
+        for (var item: StructuralElement.values()) {
+            put(item, false);
+        }
+    }};
+
+    private void checkStructuralElements() {
+        var paragraphs = document.getParagraphs();
+        for (var paragraph: paragraphs) {
+            var structuralElement = getStructuralElement(paragraph.getText());
+            if (structuralElement != null) {
+                structuralElementsCheck.put(structuralElement, true);
+                if (paragraph.getAlignment() != ParagraphAlignment.CENTER) {
+//                    errors.add()
+                }
+            }
+        }
+        for (var item: structuralElementsCheck.keySet()) {
+            errors.add(new MissingStructuralElementError(item, new Location()));
+        }
+    }
+
+    private StructuralElement getStructuralElement(String text) {
+        for (var elem: StructuralElement.values()) {
+            if (text.equals(elem.getTitle())) {
+                return elem;
+            }
+        }
+        return null;
     }
 
 }
