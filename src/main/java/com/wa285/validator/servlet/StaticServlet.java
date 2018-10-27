@@ -1,5 +1,6 @@
 package com.wa285.validator.servlet;
 
+import javax.servlet.ServletException;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
@@ -7,6 +8,7 @@ import java.io.File;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.nio.file.Files;
+
 
 public class StaticServlet extends HttpServlet {
     @Override
@@ -17,6 +19,7 @@ public class StaticServlet extends HttpServlet {
             Files.copy(file.toPath(), outputStream);
         } else {
             String[] allUri = request.getRequestURI().split("\\+");
+
 
             response.setContentType(getContentTypeFromName(allUri[0]));
             for (String uri : allUri) {
@@ -37,6 +40,12 @@ public class StaticServlet extends HttpServlet {
             }
         }
         outputStream.flush();
+    }
+
+    @Override
+    protected void doPost(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
+
+        super.doPost(req, resp);
     }
 
     private String getContentTypeFromName(String name) {
