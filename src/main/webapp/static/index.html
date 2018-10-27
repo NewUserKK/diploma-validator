@@ -1,12 +1,17 @@
 <!DOCTYPE html>
 <head>
     <meta charset="utf-8">
+    <link rel="stylesheet" type="text/css" href="css/style.css">
     <title>Пример создания поля загрузки файлов</title>
 </head>
 <body>
-<form method="POST" enctype="multipart/form-data">
-    <input name="user-file" type="file">
-    <br><br>
-    <input type="submit" value="Отправить">
-</form>
+    <div class="text" tabindex="-1">
+        Docx
+    </div>
+    <div class="buttons">
+        <form method="POST" enctype="multipart/form-data">
+            <input name="user-file" type="file">
+            <input type="submit" value="Отправить">
+        </form>
+    </div>
 </body>

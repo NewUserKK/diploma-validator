@@ -1,0 +1,14 @@
+.text {
+    overflow: scroll !important;
+    margin-bottom: 30px;
+    margin-right: -30px;
+    padding-bottom: 30px;
+    height: 80%;
+    width: 100%;
+    outline: none;
+}
+
+.buttons {
+    /*position: relative;*/
+    display: flex;
+}
