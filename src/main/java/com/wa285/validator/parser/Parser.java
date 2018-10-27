@@ -250,12 +250,6 @@ public class Parser {
                                 new Location(i, 0, line.length())
                         ));
                     }
-                    if (!line.endsWith(";")) {
-                        errors.add(new WrongEndingSymbolError(
-                                "Сложные перечисления должны разделяться точкой с запятой",
-                                new Location(i, 0, line.length())
-                        ));
-                    }
 
                 } else if (prevType == DIGIT) {
                     if (Integer.parseInt(currentDigit) - 1 != Integer.parseInt(prevStart)) {
@@ -264,7 +258,6 @@ public class Parser {
                                 new Location(i, 0, line.length())
                         ));
                     }
-                    checkEndingSymbol(prevLine, i, line);
 
                 } else if (prevType == LETTER) {
                     errors.add(new EnumerationNumberingError(
@@ -297,12 +290,6 @@ public class Parser {
                     if (currentChar != '1') {
                         errors.add(new WrongStartingSymbolError(
                                 "Вложенные перечисления должны начинаться с 'а'",
-                                new Location(i, 0, line.length())
-                        ));
-                    }
-                    if (!line.endsWith(";")) {
-                        errors.add(new WrongEndingSymbolError(
-                                "Сложные перечисления должны разделяться точкой с запятой",
                                 new Location(i, 0, line.length())
                         ));
                     }
@@ -340,7 +327,6 @@ public class Parser {
                                     new Location(i, 0, line.length())
                             ));
                         }
-                        checkEndingSymbol(prevLine, i, line);
                     } else {
                         errors.add(new EnumerationNumberingError(
                                 "В перечислении не должны содержаться буквы: " + forbiddenLetters.toString(),
@@ -367,25 +353,6 @@ public class Parser {
                 prevType = NONE;
             }
             prevLine = line;
-        }
-    }
-
-    private void checkEndingSymbol(String prevLine, int i, String line) {
-        if (prevLine.endsWith(",") && !line.endsWith(",")) {
-            errors.add(new WrongEndingSymbolError(
-                    "Простые перечисления должны разделяться запятыми",
-                    new Location(i, 0, line.length())
-            ));
-        } else if (prevLine.endsWith(";") && !line.endsWith(";")) {
-            errors.add(new WrongEndingSymbolError(
-                    "Сложные перечисления должны разделяться точкой с запятой",
-                    new Location(i, 0, line.length())
-            ));
-        } else if (prevLine.endsWith(".")) {
-            errors.add(new WrongEndingSymbolError(
-                    "Точка должна стоять только в конце перечисления",
-                    new Location(i, 0, line.length())
-            ));
         }
     }
 }
