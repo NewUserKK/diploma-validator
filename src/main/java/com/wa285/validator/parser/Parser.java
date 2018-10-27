@@ -3,18 +3,18 @@ package com.wa285.validator.parser;
 import com.wa285.validator.parser.errors.Error;
 import com.wa285.validator.parser.errors.Location;
 import com.wa285.validator.parser.errors.critical.*;
+import com.wa285.validator.parser.errors.critical.enumeration.EnumerationNumberingError;
+import com.wa285.validator.parser.errors.critical.structural.StructuralElementCenteringError;
+import com.wa285.validator.parser.errors.critical.structural.StructuralElementMissingBoldError;
 import com.wa285.validator.parser.errors.warning.MissingStructuralElementError;
 import org.apache.poi.xwpf.usermodel.ParagraphAlignment;
 import org.apache.poi.xwpf.usermodel.XWPFDocument;
-import org.openxmlformats.schemas.wordprocessingml.x2006.main.CTBody;
-import org.openxmlformats.schemas.wordprocessingml.x2006.main.STPageOrientation;
 
 import java.io.*;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import static com.wa285.validator.parser.ElementSize.*;
@@ -63,19 +63,19 @@ public class Parser {
         var bottomMargin = margin.getBottom().intValue();
 
         if (!LEFT_MARGIN.value().contains(leftMargin)) {
-            errors.add(new FieldSizeCriticalError("LeftFieldSizeCriticalError", null));
+            errors.add(new FieldSizeError("LeftFieldSizeCriticalError", null));
         }
 
         if (!RIGHT_MARGIN.value().contains(rightMargin)) {
-            errors.add(new FieldSizeCriticalError("RightFieldSizeCriticalError", null));
+            errors.add(new FieldSizeError("RightFieldSizeCriticalError", null));
         }
 
         if (!TOP_MARGIN.value().contains(topMargin)) {
-            errors.add(new FieldSizeCriticalError("TopFieldSizeCriticalError", null));
+            errors.add(new FieldSizeError("TopFieldSizeCriticalError", null));
         }
 
         if (!BOTTOM_MARGIN.value().contains(bottomMargin)) {
-            errors.add(new FieldSizeCriticalError("BottomFieldSizeCriticalError", null));
+            errors.add(new FieldSizeError("BottomFieldSizeCriticalError", null));
         }
 
         var pageSize = document.getDocument().getBody().getSectPr().getPgSz();
@@ -83,11 +83,11 @@ public class Parser {
         var documentHeight = pageSize.getH().intValue();
 
         if (!DOCUMENT_WIDTH.value().contains(documentWidth)) {
-            errors.add(new DocumentFormatCriticalError("WidthDocumentFormatCriticalError", null));
+            errors.add(new DocumentFormatError("WidthDocumentFormatCriticalError", null));
         }
 
         if (!DOCUMENT_HEIGHT.value().contains(documentHeight)) {
-            errors.add(new DocumentFormatCriticalError("HeightDocumentFormatCriticalError", null));
+            errors.add(new DocumentFormatError("HeightDocumentFormatCriticalError", null));
         }
 
         var paragraphs = document.getParagraphs();
@@ -101,15 +101,15 @@ public class Parser {
                 Location location = new Location(i, textStart, textEnd, j);
 
                 if (run.getColor() != null) {
-                    errors.add(new FontColorCriticalError("Font must be black", null));
+                    errors.add(new FontColorError("Font must be black", null));
                 }
 
                 if (run.getFontName() == null || !run.getFontName().equals("Times New Roman")) {
-                    errors.add(new FontStyleCriticalError("Font must be \"Times New Roman\"", null));
+                    errors.add(new FontStyleError("Font must be \"Times New Roman\"", null));
                 }
 
                 if (run.getFontSize() < 12) {
-                    errors.add(new FontSizeCriticalError("Font size must be not less than 12pt", location));
+                    errors.add(new FontSizeError("Font size must be not less than 12pt", location));
                 }
 
                 textStart = textEnd;
@@ -140,7 +140,7 @@ public class Parser {
             if (structuralElement != null) {
                 structuralElementsCheck.put(structuralElement, true);
                 if (paragraph.getAlignment() != ParagraphAlignment.CENTER) {
-                    errors.add(new StructuralElementStyleError(
+                    errors.add(new StructuralElementCenteringError(
                             structuralElement, "is not centered",
                             new Location(i, 0, paragraph.getText().length())
                     ));
@@ -152,7 +152,7 @@ public class Parser {
                     var run = runs.get(j);
                     var textEnd = textStart + run.text().length();
                     if (!run.isBold()) {
-                        errors.add(new StructuralElementStyleError(
+                        errors.add(new StructuralElementMissingBoldError(
                                 structuralElement, "should be bold!",
                                 new Location(i, textStart, textEnd, j)
                         ));
@@ -224,7 +224,7 @@ public class Parser {
 
                 } else if (prevType == DIGIT) {
                     if (Integer.parseInt(currentDigit) - 1 != Integer.parseInt(prevStart)) {
-                        errors.add(new EnumerationCriticalError(
+                        errors.add(new EnumerationNumberingError(
                                 "Inconsistent numering",
                                 new Location(i, 0, line.length())
                         ));
@@ -234,7 +234,7 @@ public class Parser {
                 } else if (prevType == DASH) {
                     // TODO: complex lists
                 } else if (prevType == LETTER) {
-                    errors.add(new EnumerationCriticalError(
+                    errors.add(new EnumerationNumberingError(
                             "Inconsistent enum type",
                             new Location(i,0, line.length())
                     ));
