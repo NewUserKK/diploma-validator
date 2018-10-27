@@ -2,9 +2,7 @@ package com.wa285.validator.parser;
 
 import com.wa285.validator.parser.errors.Error;
 import com.wa285.validator.parser.errors.Location;
-import com.wa285.validator.parser.errors.critical.FieldSizeCriticalError;
-import com.wa285.validator.parser.errors.critical.DocumentFormatCriticalError;
-import com.wa285.validator.parser.errors.critical.StructuralElementStyleError;
+import com.wa285.validator.parser.errors.critical.*;
 import com.wa285.validator.parser.errors.warning.MissingStructuralElementError;
 import org.apache.poi.xwpf.usermodel.ParagraphAlignment;
 import org.apache.poi.xwpf.usermodel.XWPFDocument;
@@ -93,6 +91,30 @@ public class Parser {
         if (!DOCUMENT_HEIGHT.value().contains(documentHeight)) {
             errors.add(new DocumentFormatCriticalError("HeightDocumentFormatCriticalError", null));
         }
+
+        var paragraphs = document.getParagraphs();
+        for (int i = 0; i < paragraphs.size(); i++) {
+            var textStart = 0;
+            for (var run : paragraphs.get(i).getRuns()) {
+                var textEnd = textStart + run.toString().length();
+                Location location = new Location(i, textStart, textEnd);
+                if (run.getColor() != null) {
+                    errors.add(new FontColorCriticalError("Font must be black", location));
+                }
+
+                if (run.getFontName() == null || !run.getFontName().equals("Times New Roman")) {
+                    errors.add(new FontStyleCriticalError("Font must be \"Times New Roman\"", location));
+                }
+
+                if (run.getFontSize() < 12) {
+                    errors.add(new FontSizeCriticalError("Font size must be not less than 12pt", location));
+                }
+
+                textStart = textEnd;
+            }
+        }
+
+
 
     }
 
