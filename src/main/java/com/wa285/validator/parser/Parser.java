@@ -21,7 +21,6 @@ import static com.wa285.validator.parser.ElementSize.*;
 public class Parser {
     private final List<Error> errors = new ArrayList<>();
     private final XWPFDocument document;
-    private boolean parsed;
 
     public Parser(File file) throws IOException {
         this(new FileInputStream(file));
@@ -35,7 +34,6 @@ public class Parser {
                     e.getMessage());
             throw e;
         }
-
         parse();
     }
 
@@ -44,16 +42,12 @@ public class Parser {
     }
 
     public List<Error> findErrors() {
-        if (!parsed) {
-            parse();
-        }
         return errors;
     }
 
     private void parse() {
         checkFormat();
         checkNumeration();
-        this.parsed = true;
     }
 
     private void checkFormat() {
@@ -95,9 +89,11 @@ public class Parser {
         for (int i = 0; i < paragraphs.size(); i++) {
             var textStart = 0;
 
-            for (var run : paragraphs.get(i).getRuns()) {
+            var runs = paragraphs.get(i).getRuns();
+            for (int j = 0; j < runs.size(); j++) {
+                var run = runs.get(i);
                 var textEnd = textStart + run.toString().length();
-                Location location = new Location(i, textStart, textEnd);
+                Location location = new Location(i, textStart, textEnd, j);
 
                 if (run.getColor() != null) {
                     errors.add(new FontColorCriticalError("Font must be black", null));
@@ -114,9 +110,6 @@ public class Parser {
                 textStart = textEnd;
             }
         }
-
-
-
     }
 
     private void checkNumeration() {
@@ -149,15 +142,17 @@ public class Parser {
                 }
 
                 var textStart = 0;
-                for (var run: paragraph.getRuns()) {
+                var runs = paragraph.getRuns();
+                for (int j = 0; j < runs.size(); j++) {
+                    var run = runs.get(j);
                     var textEnd = textStart + run.text().length();
                     if (!run.isBold()) {
                         errors.add(new StructuralElementStyleError(
                                 structuralElement, "should be bold!",
-                                new Location(i, textStart, textStart + textEnd)
+                                new Location(i, textStart, textEnd, j)
                         ));
                     }
-                    textStart += textEnd;
+                    textStart = textEnd;
                 }
             }
         }
