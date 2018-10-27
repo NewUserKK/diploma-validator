@@ -86,10 +86,6 @@ public class Parser {
         var documentWidth = pageSize.getW().intValue();
         var documentHeight = pageSize.getH().intValue();
 
-        if (documentOrientation != STPageOrientation.Enum.forInt(2)) {
-            errors.add(new DocumentFormatCriticalError("A4", null));
-        }
-
         if (!DOCUMENT_WIDTH.value().contains(documentWidth)) {
             errors.add(new DocumentFormatCriticalError("WidthDocumentFormatCriticalError", null));
         }
