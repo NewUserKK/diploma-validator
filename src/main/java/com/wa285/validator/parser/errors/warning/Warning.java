@@ -1,4 +1,7 @@
-package com.wa285.validator.parser.errors;
+package com.wa285.validator.parser.errors.warning;
+
+import com.wa285.validator.parser.errors.Error;
+import com.wa285.validator.parser.errors.Location;
 
 public abstract class Warning extends Error {
 
