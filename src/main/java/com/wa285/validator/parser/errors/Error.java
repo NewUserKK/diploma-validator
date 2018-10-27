@@ -2,12 +2,10 @@ package com.wa285.validator.parser.errors;
 
 public abstract class Error {
     public final String description;
-    public final int page;
-    public final int position;
+    public final Location location;
 
-    public Error(String description, int page, int position) {
+    public Error(String description, Location location) {
         this.description = description;
-        this.page = page;
-        this.position = position;
+        this.location = location;
     }
 }
