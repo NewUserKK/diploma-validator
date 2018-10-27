@@ -52,8 +52,9 @@ public class LibTest {
 //        for (var par: doc.getParagraphs()) {
 //            System.out.print(">>");
 //            for (var run: par.getRuns()) {
-//                System.out.print("[[" + run.getColor() + "]]");
+//                System.out.print("[" + run.toString() + "]");
 //            }
+//            System.out.print(par.getText());
 //            System.out.println("<<");
 //        }
         doc.getProperties().getExtendedProperties().getPages();

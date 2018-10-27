@@ -11,6 +11,7 @@ public abstract class Error {
 
     @Override
     public String toString() {
-        return description;
+        return description +
+                (location != null ? "\n\tat " + location.toString() : "");
     }
 }
