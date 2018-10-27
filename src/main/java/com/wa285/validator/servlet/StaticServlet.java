@@ -1,5 +1,6 @@
 package com.wa285.validator.servlet;
 
+import javax.servlet.ServletException;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
@@ -37,6 +38,11 @@ public class StaticServlet extends HttpServlet {
             }
         }
         outputStream.flush();
+    }
+
+    @Override
+    protected void doPost(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
+        super.doPost(request, response);
     }
 
     private String getContentTypeFromName(String name) {
