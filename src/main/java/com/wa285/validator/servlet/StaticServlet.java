@@ -18,6 +18,9 @@ import java.util.Random;
 
 
 public class StaticServlet extends HttpServlet {
+
+    private static int number = 1;
+
     @Override
     protected void doGet(HttpServletRequest request, HttpServletResponse response) throws IOException {
         OutputStream outputStream = response.getOutputStream();
@@ -94,10 +97,12 @@ public class StaticServlet extends HttpServlet {
                     processUploadedFile(item);
                 }
             }
+            OutputStream outputStream = response.getOutputStream();
+            File file = new File(getServletContext().getRealPath("/static/index.html"));
+            Files.copy(file.toPath(), outputStream);
         } catch (Exception e) {
             e.printStackTrace();
             response.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
-            return;
         }
     }
 
@@ -109,17 +114,17 @@ public class StaticServlet extends HttpServlet {
      * @throws Exception
      */
     private void processUploadedFile(FileItem item) throws Exception {
-        File uploadetFile = null;
+        File uploadedFile = null;
         //выбираем файлу имя пока не найдём свободное
         do {
-            String path = getServletContext().getRealPath("/upload/" + random.nextInt() + item.getName());
-            uploadetFile = new File(path);
-        } while (uploadetFile.exists());
+            String path = getServletContext().getRealPath("/upload/" + number + "_" + item.getName());
+            number++;
+            uploadedFile = new File(path);
+        } while (uploadedFile.exists());
 
         //создаём файл
-        uploadetFile.createNewFile();
         //записываем в него данные
-        item.write(uploadetFile);
+        item.write(uploadedFile);
     }
 
     /**
