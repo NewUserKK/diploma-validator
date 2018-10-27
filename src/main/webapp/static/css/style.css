@@ -9,11 +9,13 @@
 }
 
 .buttons {
-    /*position: relative;*/
     display: flex;
 }
 
 .buttons .FindDiff {
     padding-left: 50px;
+}
 
+.download {
+    margin-left: 30px;
 }
