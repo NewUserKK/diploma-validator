@@ -109,7 +109,7 @@ public class Parser {
                 }
 
                 if (run.getFontSize() < 12) {
-                    errors.add(new FontSizeError("Размер шрифта должен быть не меньше 12 пт", location));
+                    errors.add(new FontSizeError("Размер шрифта должен быть не меньше 12 пт: " + run.getFontSize() + " здесь", location));
                 }
 
                 textStart = textEnd;
