@@ -1,13 +1,17 @@
+body {
+    background-color: wheat;
+}
+
 .text {
     display: block;
     overflow: auto;
     margin-bottom: 30px;
     margin-left: 2.5%;
     margin-right: 2.5%;
-    height: 40rem;
+    height: 20rem;
     width: 95%;
     outline: none;
-
+    background-color: white;
 }
 
 .buttons {
