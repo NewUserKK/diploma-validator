@@ -9,6 +9,7 @@ import java.io.IOException;
 import java.io.OutputStream;
 import java.nio.file.Files;
 
+
 public class StaticServlet extends HttpServlet {
     @Override
     protected void doGet(HttpServletRequest request, HttpServletResponse response) throws IOException {
@@ -18,6 +19,7 @@ public class StaticServlet extends HttpServlet {
             Files.copy(file.toPath(), outputStream);
         } else {
             String[] allUri = request.getRequestURI().split("\\+");
+
 
             response.setContentType(getContentTypeFromName(allUri[0]));
             for (String uri : allUri) {
