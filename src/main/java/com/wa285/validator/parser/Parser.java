@@ -94,15 +94,17 @@ public class Parser {
         var paragraphs = document.getParagraphs();
         for (int i = 0; i < paragraphs.size(); i++) {
             var textStart = 0;
+
             for (var run : paragraphs.get(i).getRuns()) {
                 var textEnd = textStart + run.toString().length();
                 Location location = new Location(i, textStart, textEnd);
+
                 if (run.getColor() != null) {
-                    errors.add(new FontColorCriticalError("Font must be black", location));
+                    errors.add(new FontColorCriticalError("Font must be black", null));
                 }
 
                 if (run.getFontName() == null || !run.getFontName().equals("Times New Roman")) {
-                    errors.add(new FontStyleCriticalError("Font must be \"Times New Roman\"", location));
+                    errors.add(new FontStyleCriticalError("Font must be \"Times New Roman\"", null));
                 }
 
                 if (run.getFontSize() < 12) {

@@ -25,9 +25,13 @@ public class LibTest {
     public static void main(String[] args) throws IOException {
         var test = new LibTest();
         var doc = test.getDocument("Test.docx");
-        doc.getProperties().getExtendedProperties().getPages();
-        var parser = new Parser(doc);
-        System.out.println(parser.findErrors().stream().map(Object::toString)
-                .collect(Collectors.joining("\n")));
+//        doc.getProperties().getExtendedProperties().getPages();
+//        var parser = new Parser(doc);
+//        System.out.println(parser.findErrors().stream().map(Object::toString)
+//                .collect(Collectors.joining("\n")));
+//
+        for (var paragraph : doc.getParagraphs()) {
+            System.out.println(paragraph.getIndentationFirstLine());
+        }
     }
 }
