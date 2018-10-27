@@ -1,10 +1,12 @@
 <!DOCTYPE html>
-<html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <title>Title</title>
+    <meta charset="utf-8">
+    <title>Пример создания поля загрузки файлов</title>
 </head>
 <body>
-<p>Hackathon</p>
+<form method="POST" enctype="multipart/form-data">
+    <input name="user-file" type="file">
+    <br><br>
+    <input type="submit" value="Отправить">
+</form>
 </body>
-</html>

@@ -11,22 +11,28 @@ import java.nio.file.Files;
 public class StaticServlet extends HttpServlet {
     @Override
     protected void doGet(HttpServletRequest request, HttpServletResponse response) throws IOException {
-        String[] allUri = request.getRequestURI().split("\\+");
         OutputStream outputStream = response.getOutputStream();
-        response.setContentType(getContentTypeFromName(allUri[0]));
-        for (String uri : allUri) {
-            if (uri.contains("/") && !uri.startsWith("/")) {
-                uri = "/" + uri;
-            }
-            File file = new File(System.getProperty("user.dir") + "/src/main/webapp/static" + uri);
-            if (file.isFile()) {
-                Files.copy(file.toPath(), outputStream);
-            } else {
-                file = new File(getServletContext().getRealPath("/static" + uri));
+        if (request.getRequestURI().length() == 0 || request.getRequestURI().equals("/")) {
+            File file = new File(getServletContext().getRealPath("/static/index.html"));
+            Files.copy(file.toPath(), outputStream);
+        } else {
+            String[] allUri = request.getRequestURI().split("\\+");
+
+            response.setContentType(getContentTypeFromName(allUri[0]));
+            for (String uri : allUri) {
+                if (uri.contains("/") && !uri.startsWith("/")) {
+                    uri = "/" + uri;
+                }
+                File file = new File(System.getProperty("user.dir") + "/src/main/webapp/static" + uri);
                 if (file.isFile()) {
                     Files.copy(file.toPath(), outputStream);
                 } else {
-                    response.sendError(HttpServletResponse.SC_NOT_FOUND);
+                    file = new File(getServletContext().getRealPath("/static" + uri));
+                    if (file.isFile()) {
+                        Files.copy(file.toPath(), outputStream);
+                    } else {
+                        response.sendError(HttpServletResponse.SC_NOT_FOUND);
+                    }
                 }
             }
         }
