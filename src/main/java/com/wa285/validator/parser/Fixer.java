@@ -18,6 +18,7 @@ public class Fixer {
     private final List<Error> errors;
     private final XWPFDocument document;
 
+
     public Fixer(File file, ArrayList<Error> errors) throws IOException {
         this(new FileInputStream(file), errors);
     }
