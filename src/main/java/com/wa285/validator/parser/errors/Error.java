@@ -9,6 +9,14 @@ public abstract class Error {
         this.location = location;
     }
 
+    public Location getLocation() {
+        return location;
+    }
+
+    public String getDescription() {
+        return description;
+    }
+
     @Override
     public String toString() {
         return description +
