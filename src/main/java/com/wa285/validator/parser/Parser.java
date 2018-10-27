@@ -65,19 +65,23 @@ public class Parser {
         var topMargin = margin.getTop().intValue();
         var bottomMargin = margin.getBottom().intValue();
 
-        if (leftMargin != LEFT_MARGIN.value()) {
+//        if (leftMargin != LEFT_MARGIN.value()) {
+        if (!LEFT_MARGIN.value().contains(leftMargin)) {
             errors.add(new FieldSizeCriticalError("LeftFieldSizeCriticalError", null));
         }
 
-        if (rightMargin != RIGHT_MARGIN.value()) {
+//        if (rightMargin != RIGHT_MARGIN.value()) {
+        if (!RIGHT_MARGIN.value().contains(rightMargin)) {
             errors.add(new FieldSizeCriticalError("RightFieldSizeCriticalError", null));
         }
 
-        if (topMargin != TOP_MARGIN.value()) {
+//        if (topMargin != TOP_MARGIN.value()) {
+        if (!TOP_MARGIN.value().contains(topMargin)) {
             errors.add(new FieldSizeCriticalError("TopFieldSizeCriticalError", null));
         }
 
-        if (bottomMargin != BOTTOM_MARGIN.value()) {
+//        if (bottomMargin != BOTTOM_MARGIN.value()) {
+        if (!BOTTOM_MARGIN.value().contains(bottomMargin)) {
             errors.add(new FieldSizeCriticalError("BottomFieldSizeCriticalError", null));
         }
 
@@ -90,11 +94,13 @@ public class Parser {
             errors.add(new DocumentFormatCriticalError("A4", null));
         }
 
-        if (documentWidth != DOCUMENT_WIDTH.value()) {
+//        if (documentWidth != DOCUMENT_WIDTH.value()) {
+        if (!DOCUMENT_WIDTH.value().contains(documentWidth)) {
             errors.add(new DocumentFormatCriticalError("WidthDocumentFormatCriticalError", null));
         }
 
-        if (documentHeight != DOCUMENT_HEIGHT.value()) {
+//        if (documentHeight != DOCUMENT_HEIGHT.value()) {
+        if (!DOCUMENT_HEIGHT.value().contains(documentHeight)) {
             errors.add(new DocumentFormatCriticalError("HeightDocumentFormatCriticalError", null));
         }
 
