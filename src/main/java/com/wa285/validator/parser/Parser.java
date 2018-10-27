@@ -14,14 +14,15 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import static com.wa285.validator.parser.ElementSize.*;
 
 // TODO: exceptions
 public class Parser {
-    private final List<Error> errors = new ArrayList<>();
+    private List<Error> errors;
     private final XWPFDocument document;
-    private boolean parsed;
 
     public Parser(File file) throws IOException {
         this(new FileInputStream(file));
@@ -35,8 +36,6 @@ public class Parser {
                     e.getMessage());
             throw e;
         }
-
-        parse();
     }
 
     public Parser(XWPFDocument document) {
@@ -44,16 +43,16 @@ public class Parser {
     }
 
     public List<Error> findErrors() {
-        if (!parsed) {
+        if (errors == null) {
             parse();
         }
         return errors;
     }
 
     private void parse() {
+        errors = new ArrayList<>();
         checkFormat();
         checkNumeration();
-        this.parsed = true;
     }
 
     private void checkFormat() {
@@ -95,9 +94,11 @@ public class Parser {
         for (int i = 0; i < paragraphs.size(); i++) {
             var textStart = 0;
 
-            for (var run : paragraphs.get(i).getRuns()) {
+            var runs = paragraphs.get(i).getRuns();
+            for (int j = 0; j < runs.size(); j++) {
+                var run = runs.get(j);
                 var textEnd = textStart + run.toString().length();
-                Location location = new Location(i, textStart, textEnd);
+                Location location = new Location(i, textStart, textEnd, j);
 
                 if (run.getColor() != null) {
                     errors.add(new FontColorCriticalError("Font must be black", null));
@@ -114,9 +115,6 @@ public class Parser {
                 textStart = textEnd;
             }
         }
-
-
-
     }
 
     private void checkNumeration() {
@@ -149,15 +147,17 @@ public class Parser {
                 }
 
                 var textStart = 0;
-                for (var run: paragraph.getRuns()) {
+                var runs = paragraph.getRuns();
+                for (int j = 0; j < runs.size(); j++) {
+                    var run = runs.get(j);
                     var textEnd = textStart + run.text().length();
                     if (!run.isBold()) {
                         errors.add(new StructuralElementStyleError(
                                 structuralElement, "should be bold!",
-                                new Location(i, textStart, textStart + textEnd)
+                                new Location(i, textStart, textEnd, j)
                         ));
                     }
-                    textStart += textEnd;
+                    textStart = textEnd;
                 }
             }
         }
@@ -177,14 +177,84 @@ public class Parser {
     }
 
     private void parseEnumerations() {
+        // TODO: nested enumerations
+        // TODO: complex numbering (1.1. ...)
+        // TODO: numbering from zero
+
+        final var NONE = 0;
+        final var DASH = 1;
+        final var DIGIT = 2;
+        final var LETTER = 3;
+
+        final var dashPattern = Pattern.compile("^\\p{Space}*- .*$");  // matches -
+        final var digitPattern = Pattern.compile("^\\p{Space}*[1-9]\\d*\\) .*$");  // matches xy...)
+        final var letterPattern = Pattern.compile("^\\p{Space}*([а-я]) .*$");  // matches x)
+
+        final var forbiddenLetters = new ArrayList<>() {{
+                add('ё');
+                add('з');
+                add('й');
+                add('о');
+                add('ч');
+                add('ъ');
+                add('ы');
+                add('ь');
+        }};
+
         var paragraphs = document.getParagraphs();
 
-        var previousLine = "";
+        // TODO: - and big '-'
+        var prevLine = "";
+        var prevType = NONE;
+        var prevStart = "";
         for (int i = 0; i < paragraphs.size(); i++) {
             var paragraph = paragraphs.get(i);
+            var line = paragraph.getText();
 
+            if (line.startsWith("-") && prevLine.startsWith("-")) {
+                prevType = DASH;
+                // TODO: check ,/;
+            } else if (digitPattern.matcher(line).matches()) {  // it's a digit enum
+                var split = line.split("\\)");
+                var currentDigit = split[0];
+                // TODO: check better, through regex?
+                if (prevType == NONE) {
+                    prevType = DIGIT;
+                    prevStart = currentDigit;
 
+                } else if (prevType == DIGIT) {
+                    if (Integer.parseInt(currentDigit) - 1 != Integer.parseInt(prevStart)) {
+                        errors.add(new EnumerationCriticalError(
+                                "Inconsistent numering",
+                                new Location(i, 0, line.length())
+                        ));
+                    }
+                    prevStart = currentDigit;
+
+                } else if (prevType == DASH) {
+                    // TODO: complex lists
+                } else if (prevType == LETTER) {
+                    errors.add(new EnumerationCriticalError(
+                            "Inconsistent enum type",
+                            new Location(i,0, line.length())
+                    ));
+                } else {
+                    throw new IllegalArgumentException("Unknown enum type");
+                }
+            } else if (letterPattern.matcher(line).matches()) {  // it's a letter enum
+                var split = line.split("\\)");
+                var currentLetter = split[0];
+                assert currentLetter.length() == 1;
+                var currentChar = currentLetter.charAt(0);
+                if (forbiddenLetters.contains(currentChar)) {
+//                    TODO: errors.add(new )
+                } else {
+//                    if (currentChar ) {
+//
+//                    }
+                }
+                prevLine = line;
+            }
         }
     }
-
 }
