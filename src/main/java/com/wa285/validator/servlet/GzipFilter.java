@@ -13,19 +13,6 @@ public class GzipFilter extends HttpFilter {
     @Override
     protected void doFilter(HttpServletRequest request, HttpServletResponse response, FilterChain chain)
             throws IOException, ServletException {
-        /*String acceptEncodingHeaderValue = request.getHeader("Accept-Encoding");
-        if (acceptEncodingHeaderValue != null
-                && acceptEncodingHeaderValue.toLowerCase().contains("gzip")) {
-            DelayedHttpServletResponse delayedResponse = new DelayedHttpServletResponse(response);
-            response.setHeader("Content-Encoding", "gzip");
-            chain.doFilter(request, delayedResponse);
-            ServletOutputStream outputStream = response.getOutputStream();
-            GZIPOutputStream gzipOutputStream = new GZIPOutputStream(outputStream);
-            gzipOutputStream.write(delayedResponse.getDelayedOutputStream().toByteArray());
-            gzipOutputStream.close();
-        } else {
-            chain.doFilter(request, response);
-        }*/
         chain.doFilter(request, response);
     }
 }
