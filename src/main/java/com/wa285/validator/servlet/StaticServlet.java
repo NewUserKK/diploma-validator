@@ -2,20 +2,24 @@ package com.wa285.validator.servlet;
 
 import com.wa285.validator.parser.Parser;
 import com.wa285.validator.parser.errors.Error;
-import com.wa285.validator.parser.errors.Location;
-import com.wa285.validator.parser.errors.critical.DocumentFormatCriticalError;
+import com.wa285.validator.parser.errors.critical.Critical;
+import javafx.util.Pair;
 import org.apache.commons.fileupload.FileItem;
 import org.apache.commons.fileupload.disk.DiskFileItemFactory;
 import org.apache.commons.fileupload.servlet.ServletFileUpload;
+import org.apache.poi.wp.usermodel.Paragraph;
+import org.apache.poi.xwpf.usermodel.XWPFDocument;
+import org.apache.poi.xwpf.usermodel.XWPFParagraph;
+import org.apache.xmlbeans.XmlException;
 
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.*;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
-import java.util.List;
-import java.util.Random;
+import java.util.*;
 import java.util.stream.Collectors;
 
 
@@ -85,9 +89,54 @@ public class StaticServlet extends HttpServlet {
 
             var begin_end = new BufferedReader(new InputStreamReader(new FileInputStream(new File(getServletContext().getRealPath("/static/index.html"))))).lines().collect(Collectors.joining("")).split("<!--Docx_to-->");
             writeHtml.write(begin_end[0]);
-            for (Error error : errors) {
-                writeHtml.write(error.toString() + "<br>");
+
+            var paragraphs = document(uploadedFile); //параграфы из загруженного документа
+            ArrayList<ArrayList<Error>> errors_by_paragraph = new ArrayList<>();
+            Set<Pair<String, Boolean>> common_error = new HashSet<>();
+
+            for (String paragraph : paragraphs) {
+                errors_by_paragraph.add(new ArrayList<>());
             }
+
+            for (Error error : errors) {
+                int par_number = 0;
+                if (error.getLocation() != null) {
+                    par_number = error.getLocation().getParagraphNumber();
+                    errors_by_paragraph.get(par_number).add(error);
+                } else {
+                    boolean is_critical = error instanceof Critical;
+                    common_error.add(new Pair<>(error.description, is_critical));
+                }
+            }
+
+            for (int i = 0; i < paragraphs.length; i++) {
+                boolean wasFontSizeError = false;
+                if (paragraphs[i].isEmpty() || errors_by_paragraph.get(i).isEmpty())
+                    continue;
+                writeHtml.write(paragraphs[i] + "<br>");
+                if (!errors_by_paragraph.get(i).isEmpty()) {
+                    for (var error : errors_by_paragraph.get(i)) {
+                        if (error.description.startsWith("Размер шрифта должен быть не меньше 12 пт") && wasFontSizeError)
+                            continue;
+                        writeHtml.write("<font color=\"red\">" + error.description + "</font><br>");
+                        if (error.description.startsWith("Размер шрифта должен быть не меньше 12 пт"))
+                            wasFontSizeError = true;
+                    }
+                }
+                writeHtml.write("<br><br>");
+
+            }
+
+            writeHtml.write("<u>Общие ошибки</u>:<br>");
+            for (var error : common_error)
+                if (error.getValue())
+                    writeHtml.write(error.getKey() + "<br>");
+
+                writeHtml.write("<br><u>На это стоит обратить внимание:</u>:<br>");
+                for (var error : common_error)
+                    if (!error.getValue())
+                        writeHtml.write(error.getKey() + "<br>");
+
             writeHtml.write(begin_end[1]);
             writeHtml.close();
 
@@ -101,7 +150,7 @@ public class StaticServlet extends HttpServlet {
         }
     }
 
-    private List<Error> findErrors(File file) throws IOException {
+    private List<Error> findErrors(File file) throws IOException, XmlException {
         return new Parser(file).findErrors();
     }
 
@@ -118,6 +167,16 @@ public class StaticServlet extends HttpServlet {
         //записываем в него данные
         item.write(uploadedFile);
         return uploadedFile;
+    }
+
+    private String[] document(File file) throws IOException {
+//        return new BufferedReader(new InputStreamReader(new FileInputStream(file), StandardCharsets.UTF_8)).lines().collect(Collectors.joining("")).split("\n");
+        List<XWPFParagraph> paragraphs = new XWPFDocument(new FileInputStream(file)).getParagraphs();
+        String[] strings = new String[paragraphs.size()];
+        for (int i = 0; i < paragraphs.size(); i++) {
+            strings[i] = paragraphs.get(i).getText();
+        }
+        return strings;
     }
 
     private String getContentTypeFromName(String name) {
