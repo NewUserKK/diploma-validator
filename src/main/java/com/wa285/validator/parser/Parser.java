@@ -7,6 +7,7 @@ import com.wa285.validator.parser.errors.critical.enumeration.EnumerationNumberi
 import com.wa285.validator.parser.errors.critical.enumeration.WrongEndingSymbolError;
 import com.wa285.validator.parser.errors.critical.enumeration.WrongHyphenError;
 import com.wa285.validator.parser.errors.critical.enumeration.WrongStartingSymbolError;
+import com.wa285.validator.parser.errors.critical.structural.StructuralElementCaseError;
 import com.wa285.validator.parser.errors.critical.structural.StructuralElementCenteringError;
 import com.wa285.validator.parser.errors.critical.structural.StructuralElementMissingBoldError;
 import com.wa285.validator.parser.errors.warning.MissingStructuralElementError;
@@ -153,7 +154,14 @@ public class Parser {
                 structuralElementsCheck.put(structuralElement, true);
                 if (paragraph.getAlignment() != ParagraphAlignment.CENTER) {
                     errors.add(new StructuralElementCenteringError(
-                            structuralElement, "Должно быть по центру",
+                            structuralElement, "Заголовок структурного элемента должен быть по центру",
+                            new Location(i, 0, paragraph.getText().length())
+                    ));
+                }
+
+                if (!paragraph.getText().equals(structuralElement.getTitle())) {
+                    errors.add(new StructuralElementCaseError(
+                            structuralElement, "Заголовок структурного элемента должен быть написан прописными буквами!",
                             new Location(i, 0, paragraph.getText().length())
                     ));
                 }
@@ -175,13 +183,15 @@ public class Parser {
         }
 
         for (var item: structuralElementsCheck.keySet()) {
-            errors.add(new MissingStructuralElementError(item, null));
+            if (!structuralElementsCheck.get(item)) {
+                errors.add(new MissingStructuralElementError(item, null));
+            }
         }
     }
 
     private StructuralElement getStructuralElement(String text) {
         for (var elem: StructuralElement.values()) {
-            if (text.equals(elem.getTitle())) {
+            if (text.toUpperCase().equals(elem.getTitle())) {
                 return elem;
             }
         }
