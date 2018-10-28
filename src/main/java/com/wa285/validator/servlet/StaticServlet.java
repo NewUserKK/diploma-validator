@@ -2,6 +2,7 @@ package com.wa285.validator.servlet;
 
 import com.wa285.validator.parser.Parser;
 import com.wa285.validator.parser.errors.Error;
+import com.wa285.validator.parser.errors.GlobalError;
 import com.wa285.validator.parser.errors.critical.Critical;
 import javafx.util.Pair;
 import org.apache.commons.fileupload.FileItem;
@@ -100,7 +101,7 @@ public class StaticServlet extends HttpServlet {
 
             for (Error error : errors) {
                 int par_number = 0;
-                if (error.getLocation() != null) {
+                if (!(error instanceof GlobalError) && error.getLocation() != null) {
                     par_number = error.getLocation().getParagraphNumber();
                     errors_by_paragraph.get(par_number).add(error);
                 } else {

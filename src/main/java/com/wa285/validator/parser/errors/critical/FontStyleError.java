@@ -1,9 +1,10 @@
 package com.wa285.validator.parser.errors.critical;
 
+import com.wa285.validator.parser.errors.GlobalError;
 import com.wa285.validator.parser.errors.Location;
 import org.apache.poi.xwpf.usermodel.XWPFRun;
 
-public class FontStyleError extends Critical {
+public class FontStyleError extends Critical implements GlobalError {
     public FontStyleError(String description, Location location) {
         super(description, location);
     }
