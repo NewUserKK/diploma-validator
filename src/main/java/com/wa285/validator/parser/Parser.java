@@ -46,32 +46,32 @@ public class Parser {
         this.document = document;
     }
 
-    public List<Error> findErrors(){
+    public List<Error> findErrors() throws IOException, XmlException {
         if (errors == null) {
             parse();
         }
         return errors;
     }
 
-    private void parse(){
+    private void parse() throws IOException, XmlException {
         errors = new ArrayList<>();
         checkFormat();
         checkStructuralElements();
         checkEnumerations();
     }
 
-    private void checkFormat(){
-        CTRPr defaultValues = null;
+    private void checkFormat() throws IOException, XmlException {
+        var defaultSize = 0;
+        var defaultFont = "";
         try {
-            defaultValues = document.getStyle().getDocDefaults().getRPrDefault().getRPr();
-        } catch (XmlException e) {
-            e.printStackTrace();
-        } catch (IOException e) {
-            e.printStackTrace();
+            CTRPr defaultValues = document.getStyle().getDocDefaults().getRPrDefault().getRPr();
+            if (defaultValues != null) {
+                defaultSize = defaultValues.getSz().getVal().intValue() / 2;
+                defaultFont = defaultValues.getRFonts().getAscii();
+            }
+        } catch (NullPointerException e) {
+            // dirty hack
         }
-
-        var defaultSize = defaultValues.getSz().getVal().intValue() / 2;
-        var defaultFont = defaultValues.getRFonts().getAscii();
 
         var margin = document.getDocument().getBody().getSectPr().getPgMar();
         var leftMargin = margin.getLeft().intValue();
