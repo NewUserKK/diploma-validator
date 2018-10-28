@@ -9,11 +9,12 @@ import com.wa285.validator.parser.errors.critical.enumeration.WrongHyphenError;
 import com.wa285.validator.parser.errors.critical.enumeration.WrongStartingSymbolError;
 import com.wa285.validator.parser.errors.critical.structural.StructuralElementCenteringError;
 import com.wa285.validator.parser.errors.critical.structural.StructuralElementMissingBoldError;
-import com.wa285.validator.parser.errors.warning.DefaultSize;
 import com.wa285.validator.parser.errors.warning.MissingStructuralElementError;
 import org.apache.poi.xwpf.usermodel.ParagraphAlignment;
 import org.apache.poi.xwpf.usermodel.XWPFDocument;
 import org.apache.xmlbeans.XmlException;
+import org.openxmlformats.schemas.wordprocessingml.x2006.main.CTHpsMeasure;
+import org.openxmlformats.schemas.wordprocessingml.x2006.main.CTRPr;
 
 import java.io.*;
 import java.util.*;
@@ -44,23 +45,32 @@ public class Parser {
         this.document = document;
     }
 
-    public List<Error> findErrors() throws IOException, XmlException {
+    public List<Error> findErrors(){
         if (errors == null) {
             parse();
         }
         return errors;
     }
 
-    private void parse() throws IOException, XmlException {
+    private void parse(){
         errors = new ArrayList<>();
         checkFormat();
         checkStructuralElements();
         checkEnumerations();
     }
 
-    private void checkFormat() throws IOException, XmlException {
-        var defaultValues = document.getStyle().getDocDefaults().getRPrDefault().getRPr();
-        errors.add(new DefaultSize(defaultValues.getSz().getVal().intValue() + " " + defaultValues.getRFonts().getAscii(), null));
+    private void checkFormat(){
+        CTRPr defaultValues = null;
+        try {
+            defaultValues = document.getStyle().getDocDefaults().getRPrDefault().getRPr();
+        } catch (XmlException e) {
+            e.printStackTrace();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+
+        var defaultSize = defaultValues.getSz().getVal().intValue() / 2;
+        var defaultFont = defaultValues.getRFonts().getAscii();
 
         var margin = document.getDocument().getBody().getSectPr().getPgMar();
         var leftMargin = margin.getLeft().intValue();
@@ -107,14 +117,14 @@ public class Parser {
                 Location location = new Location(i, textStart, textEnd, j);
 
                 if (run.getColor() != null) {
-                    errors.add(new FontColorError("Шрифт должен быть чёрным: " + run.getColor() + " здесь", null));
+                    errors.add(new FontColorError("Шрифт должен быть чёрным: #" + run.getColor() + " здесь", null));
                 }
 
-                if (run.getFontName() == null || !run.getFontFamily().equals("Times New Roman")) {
+                if ((run.getFontName() == null && !defaultFont.equals("Times New Roman")) || !run.getFontFamily().equals("Times New Roman")) {
                     errors.add(new FontStyleError("Шрифт должен быть Times New Roman: " + run.getFontFamily() + " здесь", null));
                 }
 
-                if (run.getFontSize() < 12) {
+                if ((run.getFontSize() == -1 && defaultSize < 12) || run.getFontSize() < 12) {
                     errors.add(new FontSizeError("Размер шрифта должен быть не меньше 12 пт: " + run.getFontSize() + " пт здесь", location));
                 }
 
