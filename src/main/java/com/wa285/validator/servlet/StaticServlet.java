@@ -2,6 +2,8 @@ package com.wa285.validator.servlet;
 
 import com.wa285.validator.parser.Parser;
 import com.wa285.validator.parser.errors.Error;
+import com.wa285.validator.parser.errors.critical.Critical;
+import javafx.util.Pair;
 import org.apache.commons.fileupload.FileItem;
 import org.apache.commons.fileupload.disk.DiskFileItemFactory;
 import org.apache.commons.fileupload.servlet.ServletFileUpload;
@@ -90,7 +92,7 @@ public class StaticServlet extends HttpServlet {
 
             var paragraphs = document(uploadedFile); //параграфы из загруженного документа
             ArrayList<ArrayList<Error>> errors_by_paragraph = new ArrayList<>();
-            Set<String> common_error = new TreeSet<>();
+            Set<Pair<String, Boolean>> common_error = new HashSet<>();
 
             for (String paragraph : paragraphs) {
                 errors_by_paragraph.add(new ArrayList<>());
@@ -102,7 +104,8 @@ public class StaticServlet extends HttpServlet {
                     par_number = error.getLocation().getParagraphNumber();
                     errors_by_paragraph.get(par_number).add(error);
                 } else {
-                    common_error.add(error.description);
+                    boolean is_critical = error instanceof Critical;
+                    common_error.add(new Pair<>(error.description, is_critical));
                 }
             }
 
@@ -126,7 +129,13 @@ public class StaticServlet extends HttpServlet {
 
             writeHtml.write("<u>Общие ошибки</u>:<br>");
             for (var error : common_error)
-                writeHtml.write(error + "<br>");
+                if (error.getValue())
+                    writeHtml.write(error.getKey() + "<br>");
+
+                writeHtml.write("<br><u>На это стоит обратить внимание:</u>:<br>");
+                for (var error : common_error)
+                    if (!error.getValue())
+                        writeHtml.write(error.getKey() + "<br>");
 
             writeHtml.write(begin_end[1]);
             writeHtml.close();
