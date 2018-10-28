@@ -15,7 +15,8 @@ public class FieldSizeError extends Critical {
 
     @Override
     public void fix(XWPFRun run) {
-        var margin = run.getDocument().getDocument().getBody().getSectPr().getPgMar();
+        var sectPr = run.getDocument().getDocument().getBody().addNewSectPr();
+        var margin = sectPr.addNewPgMar();
 
         margin.setLeft(BigInteger.valueOf(LEFT_MARGIN.value().getCenter()));
         margin.setRight(BigInteger.valueOf(RIGHT_MARGIN.value().getCenter()));

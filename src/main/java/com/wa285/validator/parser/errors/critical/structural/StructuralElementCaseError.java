@@ -12,6 +12,6 @@ public class StructuralElementCaseError extends StructuralElementStyleError {
 
     @Override
     public void fix(XWPFRun run) {
-
+        run.setCapitalized(true);
     }
 }

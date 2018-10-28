@@ -118,15 +118,21 @@ public class Parser {
                 Location location = new Location(i, textStart, textEnd, j);
 
                 if (run.getColor() != null && !run.getColor().equals("000000")) {
-                    errors.add(new FontColorError("Шрифт должен быть чёрным: #" + run.getColor() + " здесь", null));
+                    errors.add(new FontColorError(
+                            "Шрифт должен быть чёрным: #" + run.getColor() + " здесь",
+                            location));
                 }
 
                 if (run.getFontFamily() == null) {
                     if (!defaultFont.equals("Times New Roman")) {
-                        errors.add(new FontStyleError("Шрифт должен быть Times New Roman: " + run.getFontFamily() + " здесь", null));
+                        errors.add(new FontStyleError(
+                                "Шрифт должен быть Times New Roman: " + run.getFontFamily() + " здесь",
+                                location));
                     }
                 } else if (!run.getFontFamily().equals("Times New Roman")) {
-                    errors.add(new FontStyleError("Шрифт должен быть Times New Roman: " + run.getFontFamily() + " здесь", null));
+                    errors.add(new FontStyleError(
+                            "Шрифт должен быть Times New Roman: " + run.getFontFamily() + " здесь",
+                            location));
                 }
 
                 if (run.getFontSize() == -1) {
