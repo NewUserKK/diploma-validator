@@ -1,5 +1,6 @@
 package com.wa285.validator.parser.errors.critical;
 
+import com.wa285.validator.parser.errors.GlobalError;
 import com.wa285.validator.parser.errors.Location;
 import org.apache.poi.xwpf.usermodel.XWPFRun;
 
@@ -7,7 +8,7 @@ import java.math.BigInteger;
 
 import static com.wa285.validator.parser.ElementSize.*;
 
-public class DocumentFormatError extends Critical {
+public class DocumentFormatError extends Critical implements GlobalError {
 
     public DocumentFormatError(String description, Location location) {
         super(description, location);
