@@ -1,5 +1,6 @@
 package com.wa285.validator.servlet;
 
+import com.wa285.validator.parser.Fixer;
 import com.wa285.validator.parser.Parser;
 import com.wa285.validator.parser.errors.Error;
 import com.wa285.validator.parser.errors.GlobalError;
@@ -141,6 +142,11 @@ public class StaticServlet extends HttpServlet {
             writeHtml.write(begin_end[1]);
             writeHtml.close();
 
+            var fixer = new Fixer(uploadedFile, errors);
+            File file_to_dow = new File(getServletContext().getRealPath("/static/download.docx"));
+            fixer.writeToFile(file_to_dow);
+
+
             OutputStream outputStream = response.getOutputStream();
             File file = new File(getServletContext().getRealPath("/static/textErrors.html"));
             Files.copy(file.toPath(), outputStream);
@@ -181,6 +187,10 @@ public class StaticServlet extends HttpServlet {
 
     private String getContentTypeFromName(String name) {
         name = name.toLowerCase();
+
+        if (name.endsWith(".docx")) {
+            return "application/vnd.openxmlformats-officedocument.wordprocessingml.document";
+        }
 
         if (name.endsWith(".png")) {
             return "image/png";
