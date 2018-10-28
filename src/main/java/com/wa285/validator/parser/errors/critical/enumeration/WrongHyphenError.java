@@ -11,6 +11,6 @@ public class WrongHyphenError extends EnumerationError {
 
     @Override
     public void fix(XWPFRun run) {
-        run.setText("-" + run.text().substring(1));
+//        run.setText("-" + run.text().substring(1), 0);
     }
 }

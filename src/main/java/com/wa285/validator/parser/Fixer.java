@@ -58,7 +58,10 @@ public class Fixer {
                 if (location != null) {
                     ((Critical) error).fix(runs.get(location.getParagraphNumber()).get(location.getRunNumber()));
                 } else {
-                    ((Critical) error).fix(runs.get(0).get(0));
+                    var paragraphs = document.getParagraphs();
+                    if (!paragraphs.isEmpty()) {
+                        ((Critical) error).fix(paragraphs.get(0).createRun());
+                    }
                 }
             }
         }
