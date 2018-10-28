@@ -116,7 +116,7 @@ public class Parser {
                 var textEnd = textStart + run.toString().length();
                 Location location = new Location(i, textStart, textEnd, j);
 
-                if (run.getColor() != null) {
+                if (run.getColor() != null && !run.getColor().equals("000000")) {
                     errors.add(new FontColorError("Шрифт должен быть чёрным: #" + run.getColor() + " здесь", null));
                 }
 
