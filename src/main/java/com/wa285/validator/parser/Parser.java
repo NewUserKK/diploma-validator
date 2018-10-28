@@ -59,7 +59,7 @@ public class Parser {
 
     private void checkFormat() throws IOException, XmlException {
         var defaultValues = document.getStyle().getDocDefaults().getRPrDefault().getRPr();
-        errors.add(new DefaultSize(defaultValues.getSz() + " " + defaultValues.getRFonts().getAscii(), null));
+        errors.add(new DefaultSize(defaultValues.getSz().getVal().intValue() + " " + defaultValues.getRFonts().getAscii(), null));
 
         var margin = document.getDocument().getBody().getSectPr().getPgMar();
         var leftMargin = margin.getLeft().intValue();

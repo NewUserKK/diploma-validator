@@ -8,6 +8,7 @@ import org.apache.commons.fileupload.servlet.ServletFileUpload;
 import org.apache.poi.wp.usermodel.Paragraph;
 import org.apache.poi.xwpf.usermodel.XWPFDocument;
 import org.apache.poi.xwpf.usermodel.XWPFParagraph;
+import org.apache.xmlbeans.XmlException;
 
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServlet;
@@ -107,7 +108,7 @@ public class StaticServlet extends HttpServlet {
 
             for (int i = 0; i < paragraphs.length; i++) {
                 boolean wasFontSizeError = false;
-                if (paragraphs[i].isEmpty())
+                if (paragraphs[i].isEmpty() || errors_by_paragraph.get(i).isEmpty())
                     continue;
                 writeHtml.write(paragraphs[i] + "<br>");
                 if (!errors_by_paragraph.get(i).isEmpty()) {
@@ -140,7 +141,7 @@ public class StaticServlet extends HttpServlet {
         }
     }
 
-    private List<Error> findErrors(File file) throws IOException {
+    private List<Error> findErrors(File file) throws IOException, XmlException {
         return new Parser(file).findErrors();
     }
 
