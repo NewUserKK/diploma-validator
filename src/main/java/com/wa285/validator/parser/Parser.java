@@ -121,11 +121,19 @@ public class Parser {
                     errors.add(new FontColorError("Шрифт должен быть чёрным: #" + run.getColor() + " здесь", null));
                 }
 
-                if ((run.getFontName() == null && !defaultFont.equals("Times New Roman")) || !run.getFontFamily().equals("Times New Roman")) {
+                if (run.getFontFamily() == null) {
+                    if (!defaultFont.equals("Times New Roman")) {
+                        errors.add(new FontStyleError("Шрифт должен быть Times New Roman: " + run.getFontFamily() + " здесь", null));
+                    }
+                } else if (!run.getFontFamily().equals("Times New Roman")) {
                     errors.add(new FontStyleError("Шрифт должен быть Times New Roman: " + run.getFontFamily() + " здесь", null));
                 }
 
-                if ((run.getFontSize() == -1 && defaultSize < 12) || run.getFontSize() < 12) {
+                if (run.getFontSize() == -1) {
+                    if (defaultSize < 12) {
+                        errors.add(new FontSizeError("Размер шрифта должен быть не меньше 12 пт: " + run.getFontSize() + " пт здесь", location));
+                    }
+                } else if (run.getFontSize() < 12) {
                     errors.add(new FontSizeError("Размер шрифта должен быть не меньше 12 пт: " + run.getFontSize() + " пт здесь", location));
                 }
 
