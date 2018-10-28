@@ -18,6 +18,8 @@ import org.openxmlformats.schemas.wordprocessingml.x2006.main.CTHpsMeasure;
 import org.openxmlformats.schemas.wordprocessingml.x2006.main.CTRPr;
 
 import java.io.*;
+import java.math.RoundingMode;
+import java.text.DecimalFormat;
 import java.util.*;
 import java.util.regex.Pattern;
 
@@ -80,19 +82,27 @@ public class Parser {
         var bottomMargin = margin.getBottom().intValue();
 
         if (!LEFT_MARGIN.value().contains(leftMargin)) {
-            errors.add(new FieldSizeError("Левое поле должно быть равно 30 мм: " + leftMargin * 0.017638889 + " мм здесь", null));
+            errors.add(new FieldSizeError(
+                    "Левое поле должно быть равно 30 мм: " + marginToMillimeters(leftMargin) + " мм здесь",
+                    null));
         }
 
         if (!RIGHT_MARGIN.value().contains(rightMargin)) {
-            errors.add(new FieldSizeError("Правое поле должно быть равно 15 мм: " + rightMargin * 0.017638889 + " мм здесь", null));
+            errors.add(new FieldSizeError(
+                    "Правое поле должно быть равно 15 мм: " + marginToMillimeters(rightMargin) + " мм здесь",
+                    null));
         }
 
         if (!TOP_MARGIN.value().contains(topMargin)) {
-            errors.add(new FieldSizeError("Верхнее поле должно быть равно 20 мм: " + topMargin * 0.017638889 + " мм здесь", null));
+            errors.add(new FieldSizeError(
+                    "Верхнее поле должно быть равно 20 мм: " + marginToMillimeters(topMargin) + " мм здесь",
+                    null));
         }
 
         if (!BOTTOM_MARGIN.value().contains(bottomMargin)) {
-            errors.add(new FieldSizeError("Нижнее поле должно быть равно 20 мм: " + bottomMargin * 0.017638889 + " мм здесь", null));
+            errors.add(new FieldSizeError(
+                    "Нижнее поле должно быть равно 20 мм: " + marginToMillimeters(bottomMargin) + " мм здесь",
+                    null));
         }
 
         var pageSize = document.getDocument().getBody().getSectPr().getPgSz();
@@ -146,6 +156,12 @@ public class Parser {
                 textStart = textEnd;
             }
         }
+    }
+
+    private String marginToMillimeters(int margin) {
+        DecimalFormat df = new DecimalFormat("#.##");
+        df.setRoundingMode(RoundingMode.HALF_DOWN);
+        return df.format(margin * 0.017638889);
     }
 
     /*
