@@ -13,6 +13,7 @@ body {
     outline: none;
     background-color: #E8E8ED;
     padding: 20px;
+    border: 1px solid rgb(185, 185, 185);
 }
 
 .buttons {
