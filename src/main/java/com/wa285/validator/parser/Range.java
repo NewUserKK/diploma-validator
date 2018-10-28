@@ -6,7 +6,7 @@ public class Range
     private int high;
     private int center;
 
-    private static final int range = 15;
+    private static final int range = 20;
 
     public Range(int low, int high){
         this.low = low;

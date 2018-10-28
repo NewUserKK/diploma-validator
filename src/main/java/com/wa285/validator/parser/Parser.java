@@ -7,6 +7,7 @@ import com.wa285.validator.parser.errors.critical.enumeration.EnumerationNumberi
 import com.wa285.validator.parser.errors.critical.enumeration.WrongEndingSymbolError;
 import com.wa285.validator.parser.errors.critical.enumeration.WrongHyphenError;
 import com.wa285.validator.parser.errors.critical.enumeration.WrongStartingSymbolError;
+import com.wa285.validator.parser.errors.critical.structural.EndsWithDotError;
 import com.wa285.validator.parser.errors.critical.structural.StructuralElementCaseError;
 import com.wa285.validator.parser.errors.critical.structural.StructuralElementCenteringError;
 import com.wa285.validator.parser.errors.critical.structural.StructuralElementMissingBoldError;
@@ -147,10 +148,14 @@ public class Parser {
 
                 if (run.getFontSize() == -1) {
                     if (defaultSize < 12) {
-                        errors.add(new FontSizeError("Размер шрифта должен быть не меньше 12 пт: " + run.getFontSize() + " пт здесь", location));
+                        errors.add(new FontSizeError(
+                                "Размер шрифта должен быть не меньше 12 пт: " + run.getFontSize() + " пт здесь",
+                                location));
                     }
                 } else if (run.getFontSize() < 12) {
-                    errors.add(new FontSizeError("Размер шрифта должен быть не меньше 12 пт: " + run.getFontSize() + " пт здесь", location));
+                    errors.add(new FontSizeError(
+                            "Размер шрифта должен быть не меньше 12 пт: " + run.getFontSize() + " пт здесь",
+                            location));
                 }
 
                 textStart = textEnd;
@@ -166,7 +171,6 @@ public class Parser {
 
     /*
      * TODO: add dot check in the end
-     * TODO: add lower/upper check
      */
     private void checkStructuralElements() {
         Map<StructuralElement, Boolean> structuralElementsCheck = new HashMap<>() {{
@@ -178,13 +182,27 @@ public class Parser {
         var paragraphs = document.getParagraphs();
         for (int i = 0; i < paragraphs.size(); i++) {
             var paragraph = paragraphs.get(i);
-            var structuralElement = getStructuralElement(paragraph.getText());
+            var text = paragraph.getText();
+            var endsWithDot = text.endsWith(".");
+            if (endsWithDot) {
+                text = text.substring(0, text.length() - 1);
+            }
+
+            var structuralElement = getStructuralElement(text);
 
             if (structuralElement != null) {
                 structuralElementsCheck.put(structuralElement, true);
+                if (endsWithDot) {
+                    errors.add(new EndsWithDotError(
+                            structuralElement,
+                            "Заголовок структурного документа не должен оканчиваться на точку",
+                            new Location(i, 0, paragraph.getText().length())
+                    ));
+                }
                 if (paragraph.getAlignment() != ParagraphAlignment.CENTER) {
                     errors.add(new StructuralElementCenteringError(
-                            structuralElement, "Заголовок структурного элемента должен быть по центру",
+                            structuralElement,
+                            "Заголовок структурного элемента должен быть по центру",
                             new Location(i, 0, paragraph.getText().length())
                     ));
                 }
