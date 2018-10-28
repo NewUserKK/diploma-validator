@@ -170,7 +170,6 @@ public class StaticServlet extends HttpServlet {
     }
 
     private String[] document(File file) throws IOException {
-//        return new BufferedReader(new InputStreamReader(new FileInputStream(file), StandardCharsets.UTF_8)).lines().collect(Collectors.joining("")).split("\n");
         List<XWPFParagraph> paragraphs = new XWPFDocument(new FileInputStream(file)).getParagraphs();
         String[] strings = new String[paragraphs.size()];
         for (int i = 0; i < paragraphs.size(); i++) {
