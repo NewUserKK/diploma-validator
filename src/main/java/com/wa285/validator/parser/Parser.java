@@ -9,9 +9,11 @@ import com.wa285.validator.parser.errors.critical.enumeration.WrongHyphenError;
 import com.wa285.validator.parser.errors.critical.enumeration.WrongStartingSymbolError;
 import com.wa285.validator.parser.errors.critical.structural.StructuralElementCenteringError;
 import com.wa285.validator.parser.errors.critical.structural.StructuralElementMissingBoldError;
+import com.wa285.validator.parser.errors.warning.DefaultSize;
 import com.wa285.validator.parser.errors.warning.MissingStructuralElementError;
 import org.apache.poi.xwpf.usermodel.ParagraphAlignment;
 import org.apache.poi.xwpf.usermodel.XWPFDocument;
+import org.apache.xmlbeans.XmlException;
 
 import java.io.*;
 import java.util.*;
@@ -42,21 +44,24 @@ public class Parser {
         this.document = document;
     }
 
-    public List<Error> findErrors() {
+    public List<Error> findErrors() throws IOException, XmlException {
         if (errors == null) {
             parse();
         }
         return errors;
     }
 
-    private void parse() {
+    private void parse() throws IOException, XmlException {
         errors = new ArrayList<>();
         checkFormat();
         checkStructuralElements();
         checkEnumerations();
     }
 
-    private void checkFormat() {
+    private void checkFormat() throws IOException, XmlException {
+        var defaultValues = document.getStyle().getDocDefaults().getRPrDefault().getRPr();
+        errors.add(new DefaultSize(defaultValues.getSz().getVal().intValue() + " " + defaultValues.getRFonts().getAscii(), null));
+
         var margin = document.getDocument().getBody().getSectPr().getPgMar();
         var leftMargin = margin.getLeft().intValue();
         var rightMargin = margin.getRight().intValue();
@@ -64,19 +69,19 @@ public class Parser {
         var bottomMargin = margin.getBottom().intValue();
 
         if (!LEFT_MARGIN.value().contains(leftMargin)) {
-            errors.add(new FieldSizeCriticalError("LeftFieldSizeCriticalError", null));
+            errors.add(new FieldSizeError("Левое поле должно быть равно 30 мм: " + leftMargin * 0.017638889 + " мм здесь", null));
         }
 
         if (!RIGHT_MARGIN.value().contains(rightMargin)) {
-            errors.add(new FieldSizeCriticalError("RightFieldSizeCriticalError", null));
+            errors.add(new FieldSizeError("Правое поле должно быть равно 15 мм: " + rightMargin * 0.017638889 + " мм здесь", null));
         }
 
         if (!TOP_MARGIN.value().contains(topMargin)) {
-            errors.add(new FieldSizeCriticalError("TopFieldSizeCriticalError", null));
+            errors.add(new FieldSizeError("Верхнее поле должно быть равно 20 мм: " + topMargin * 0.017638889 + " мм здесь", null));
         }
 
         if (!BOTTOM_MARGIN.value().contains(bottomMargin)) {
-            errors.add(new FieldSizeCriticalError("BottomFieldSizeCriticalError", null));
+            errors.add(new FieldSizeError("Нижнее поле должно быть равно 20 мм: " + bottomMargin * 0.017638889 + " мм здесь", null));
         }
 
         var pageSize = document.getDocument().getBody().getSectPr().getPgSz();
@@ -84,11 +89,11 @@ public class Parser {
         var documentHeight = pageSize.getH().intValue();
 
         if (!DOCUMENT_WIDTH.value().contains(documentWidth)) {
-            errors.add(new DocumentFormatCriticalError("WidthDocumentFormatCriticalError", null));
+            errors.add(new DocumentFormatError("Формат страниц должен быть вертикальный A4", null));
         }
 
         if (!DOCUMENT_HEIGHT.value().contains(documentHeight)) {
-            errors.add(new DocumentFormatCriticalError("HeightDocumentFormatCriticalError", null));
+            errors.add(new DocumentFormatError("Формат страниц должен быть вертикальный A4", null));
         }
 
         var paragraphs = document.getParagraphs();
@@ -102,15 +107,15 @@ public class Parser {
                 Location location = new Location(i, textStart, textEnd, j);
 
                 if (run.getColor() != null) {
-                    errors.add(new FontColorCriticalError("Font must be black", null));
+                    errors.add(new FontColorError("Шрифт должен быть чёрным: " + run.getColor() + " здесь", null));
                 }
 
-                if (run.getFontName() == null || !run.getFontName().equals("Times New Roman")) {
-                    errors.add(new FontStyleCriticalError("Font must be \"Times New Roman\"", null));
+                if (run.getFontName() == null || !run.getFontFamily().equals("Times New Roman")) {
+                    errors.add(new FontStyleError("Шрифт должен быть Times New Roman: " + run.getFontFamily() + " здесь", null));
                 }
 
                 if (run.getFontSize() < 12) {
-                    errors.add(new FontSizeCriticalError("Font size must be not less than 12pt", location));
+                    errors.add(new FontSizeError("Размер шрифта должен быть не меньше 12 пт: " + run.getFontSize() + " пт здесь", location));
                 }
 
                 textStart = textEnd;
@@ -138,7 +143,7 @@ public class Parser {
                 structuralElementsCheck.put(structuralElement, true);
                 if (paragraph.getAlignment() != ParagraphAlignment.CENTER) {
                     errors.add(new StructuralElementCenteringError(
-                            structuralElement, "is not centered",
+                            structuralElement, "Должно быть по центру",
                             new Location(i, 0, paragraph.getText().length())
                     ));
                 }
@@ -150,7 +155,7 @@ public class Parser {
                     var textEnd = textStart + run.text().length();
                     if (!run.isBold()) {
                         errors.add(new StructuralElementMissingBoldError(
-                                structuralElement, "should be bold!",
+                                structuralElement, "Шрифт должен быть жирным",
                                 new Location(i, textStart, textEnd, j)
                         ));
                     }

@@ -3,8 +3,9 @@ package com.wa285.validator.parser.errors.critical;
 import com.wa285.validator.parser.errors.Location;
 import org.apache.poi.xwpf.usermodel.XWPFRun;
 
-public class FontStyleCriticalError extends Critical {
-    public FontStyleCriticalError(String description, Location location) {
+public class TitleListNumerationError extends Critical {
+
+    public TitleListNumerationError(String description, Location location) {
         super(description, location);
     }
 

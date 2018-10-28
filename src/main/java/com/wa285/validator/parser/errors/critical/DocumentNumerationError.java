@@ -3,9 +3,9 @@ package com.wa285.validator.parser.errors.critical;
 import com.wa285.validator.parser.errors.Location;
 import org.apache.poi.xwpf.usermodel.XWPFRun;
 
-public class FieldSizeCriticalError extends Critical {
+public class DocumentNumerationError extends Critical {
 
-    public FieldSizeCriticalError(String description, Location location) {
+    public DocumentNumerationError(String description, Location location) {
         super(description, location);
     }
 
