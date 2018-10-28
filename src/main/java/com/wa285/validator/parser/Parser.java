@@ -6,9 +6,11 @@ import com.wa285.validator.parser.errors.critical.*;
 import com.wa285.validator.parser.errors.critical.enumeration.EnumerationNumberingError;
 import com.wa285.validator.parser.errors.critical.structural.StructuralElementCenteringError;
 import com.wa285.validator.parser.errors.critical.structural.StructuralElementMissingBoldError;
+import com.wa285.validator.parser.errors.warning.DefaultSize;
 import com.wa285.validator.parser.errors.warning.MissingStructuralElementError;
 import org.apache.poi.xwpf.usermodel.ParagraphAlignment;
 import org.apache.poi.xwpf.usermodel.XWPFDocument;
+import org.apache.xmlbeans.XmlException;
 
 import java.io.*;
 import java.util.ArrayList;
@@ -42,20 +44,23 @@ public class Parser {
         this.document = document;
     }
 
-    public List<Error> findErrors() {
+    public List<Error> findErrors() throws IOException, XmlException {
         if (errors == null) {
             parse();
         }
         return errors;
     }
 
-    private void parse() {
+    private void parse() throws IOException, XmlException {
         errors = new ArrayList<>();
         checkFormat();
         checkNumeration();
     }
 
-    private void checkFormat() {
+    private void checkFormat() throws IOException, XmlException {
+        var defaultValues = document.getStyle().getDocDefaults().getRPrDefault().getRPr();
+        errors.add(new DefaultSize(defaultValues.getSz() + " " + defaultValues.getRFonts().getAscii(), null));
+
         var margin = document.getDocument().getBody().getSectPr().getPgMar();
         var leftMargin = margin.getLeft().intValue();
         var rightMargin = margin.getRight().intValue();
@@ -109,7 +114,7 @@ public class Parser {
                 }
 
                 if (run.getFontSize() < 12) {
-                    errors.add(new FontSizeError("Размер шрифта должен быть не меньше 12 пт: " + run.getFontSize() + " здесь", location));
+                    errors.add(new FontSizeError("Размер шрифта должен быть не меньше 12 пт: " + run.getFontSize() + " пт здесь", location));
                 }
 
                 textStart = textEnd;
