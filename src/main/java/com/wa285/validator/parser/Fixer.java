@@ -40,7 +40,7 @@ public class Fixer {
     }
 
     public void writeToFile(File file) throws IOException {
-        FileOutputStream out = new FileOutputStream(file.getName());
+        FileOutputStream out = new FileOutputStream(file.getAbsolutePath());
         document.write(out);
         out.close();
         document.close();
