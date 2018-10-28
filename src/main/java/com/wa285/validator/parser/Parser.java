@@ -137,7 +137,7 @@ public class Parser {
                 if (run.getFontFamily() == null) {
                     if (!defaultFont.equals("Times New Roman")) {
                         errors.add(new FontStyleError(
-                                "Шрифт должен быть Times New Roman: " + run.getFontFamily() + " здесь",
+                                "Шрифт должен быть Times New Roman: " + defaultFont + " здесь",
                                 location));
                     }
                 } else if (!run.getFontFamily().equals("Times New Roman")) {
@@ -149,7 +149,7 @@ public class Parser {
                 if (run.getFontSize() == -1) {
                     if (defaultSize < 12) {
                         errors.add(new FontSizeError(
-                                "Размер шрифта должен быть не меньше 12 пт: " + run.getFontSize() + " пт здесь",
+                                "Размер шрифта должен быть не меньше 12 пт: " + defaultSize + " пт здесь",
                                 location));
                     }
                 } else if (run.getFontSize() < 12) {
