@@ -24,7 +24,7 @@ public class LibTest {
 
     public static void main(String[] args) throws IOException, XmlException {
         var test = new LibTest();
-        var doc = test.getDocument("LargeTest.docx");
+        var doc = test.getDocument("Test.docx");
         var parser = new Parser(doc);
         var errors = parser.findErrors();
         System.out.println(errors.stream().map(Object::toString)

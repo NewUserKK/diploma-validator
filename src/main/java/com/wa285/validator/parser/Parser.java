@@ -7,12 +7,10 @@ import com.wa285.validator.parser.errors.critical.enumeration.EnumerationNumberi
 import com.wa285.validator.parser.errors.critical.enumeration.WrongEndingSymbolError;
 import com.wa285.validator.parser.errors.critical.enumeration.WrongHyphenError;
 import com.wa285.validator.parser.errors.critical.enumeration.WrongStartingSymbolError;
-import com.wa285.validator.parser.errors.critical.structural.EndsWithDotError;
-import com.wa285.validator.parser.errors.critical.structural.StructuralElementCaseError;
-import com.wa285.validator.parser.errors.critical.structural.StructuralElementCenteringError;
-import com.wa285.validator.parser.errors.critical.structural.StructuralElementMissingBoldError;
+import com.wa285.validator.parser.errors.critical.structural.*;
 import com.wa285.validator.parser.errors.warning.MissingStructuralElementError;
 import org.apache.poi.xwpf.usermodel.ParagraphAlignment;
+import org.apache.poi.xwpf.usermodel.UnderlinePatterns;
 import org.apache.poi.xwpf.usermodel.XWPFDocument;
 import org.apache.xmlbeans.XmlException;
 import org.openxmlformats.schemas.wordprocessingml.x2006.main.CTHpsMeasure;
@@ -84,25 +82,25 @@ public class Parser {
 
         if (!LEFT_MARGIN.value().contains(leftMargin)) {
             errors.add(new FieldSizeError(
-                    "Левое поле должно быть равно 30 мм: " + marginToMillimeters(leftMargin) + " мм здесь",
+                    "Левое поле должно быть равно 30 мм: найдено " + marginToMillimeters(leftMargin) + " мм",
                     null));
         }
 
         if (!RIGHT_MARGIN.value().contains(rightMargin)) {
             errors.add(new FieldSizeError(
-                    "Правое поле должно быть равно 15 мм: " + marginToMillimeters(rightMargin) + " мм здесь",
+                    "Правое поле должно быть равно 15 мм: найдено " + marginToMillimeters(rightMargin) + " мм",
                     null));
         }
 
         if (!TOP_MARGIN.value().contains(topMargin)) {
             errors.add(new FieldSizeError(
-                    "Верхнее поле должно быть равно 20 мм: " + marginToMillimeters(topMargin) + " мм здесь",
+                    "Верхнее поле должно быть равно 20 мм: найдено " + marginToMillimeters(topMargin) + " мм",
                     null));
         }
 
         if (!BOTTOM_MARGIN.value().contains(bottomMargin)) {
             errors.add(new FieldSizeError(
-                    "Нижнее поле должно быть равно 20 мм: " + marginToMillimeters(bottomMargin) + " мм здесь",
+                    "Нижнее поле должно быть равно 20 мм: найдено " + marginToMillimeters(bottomMargin) + " мм",
                     null));
         }
 
@@ -111,11 +109,15 @@ public class Parser {
         var documentHeight = pageSize.getH().intValue();
 
         if (!DOCUMENT_WIDTH.value().contains(documentWidth)) {
-            errors.add(new DocumentFormatError("Формат страниц должен быть вертикальный A4", null));
+            errors.add(new DocumentFormatError(
+                    "Ширина страниц не соответствует формату A4 в портретной ориентации",
+                    null));
         }
 
         if (!DOCUMENT_HEIGHT.value().contains(documentHeight)) {
-            errors.add(new DocumentFormatError("Формат страниц должен быть вертикальный A4", null));
+            errors.add(new DocumentFormatError(
+                    "Высота страниц не соответствует формату A4 в портретной ориентации",
+                    null));
         }
 
         var paragraphs = document.getParagraphs();
@@ -130,31 +132,31 @@ public class Parser {
 
                 if (run.getColor() != null && !run.getColor().equals("000000")) {
                     errors.add(new FontColorError(
-                            "Шрифт должен быть чёрным: #" + run.getColor() + " здесь",
+                            "Шрифт должен быть чёрным: найдено #" + run.getColor(),
                             location));
                 }
 
                 if (run.getFontFamily() == null) {
                     if (!defaultFont.equals("Times New Roman")) {
                         errors.add(new FontStyleError(
-                                "Шрифт должен быть Times New Roman: " + defaultFont + " здесь",
+                                "Шрифт должен быть Times New Roman: найдено " + defaultFont,
                                 location));
                     }
                 } else if (!run.getFontFamily().equals("Times New Roman")) {
                     errors.add(new FontStyleError(
-                            "Шрифт должен быть Times New Roman: " + run.getFontFamily() + " здесь",
+                            "Шрифт должен быть Times New Roman: найдено " + run.getFontFamily(),
                             location));
                 }
 
                 if (run.getFontSize() == -1) {
                     if (defaultSize < 12) {
                         errors.add(new FontSizeError(
-                                "Размер шрифта должен быть не меньше 12 пт: " + defaultSize + " пт здесь",
+                                "Размер шрифта должен быть не меньше 12 пт: найдено " + defaultSize + " пт",
                                 location));
                     }
                 } else if (run.getFontSize() < 12) {
                     errors.add(new FontSizeError(
-                            "Размер шрифта должен быть не меньше 12 пт: " + run.getFontSize() + " пт здесь",
+                            "Размер шрифта должен быть не меньше 12 пт: найдено " + run.getFontSize() + " пт",
                             location));
                 }
 
@@ -169,9 +171,7 @@ public class Parser {
         return df.format(margin * 0.017638889);
     }
 
-    /*
-     * TODO: add dot check in the end
-     */
+
     private void checkStructuralElements() {
         Map<StructuralElement, Boolean> structuralElementsCheck = new HashMap<>() {{
             for (var item: StructuralElement.values()) {
@@ -209,7 +209,8 @@ public class Parser {
 
                 if (!paragraph.getText().equals(structuralElement.getTitle())) {
                     errors.add(new StructuralElementCaseError(
-                            structuralElement, "Заголовок структурного элемента должен быть написан прописными буквами!",
+                            structuralElement,
+                            "Заголовок структурного элемента должен быть написан прописными буквами",
                             new Location(i, 0, paragraph.getText().length())
                     ));
                 }
@@ -221,8 +222,25 @@ public class Parser {
                     var textEnd = textStart + run.text().length();
                     if (!run.isBold()) {
                         errors.add(new StructuralElementMissingBoldError(
-                                structuralElement, "Шрифт должен быть жирным",
+                                structuralElement,
+                                "Заголовок структурного элемента должен быть выделен полужирным",
                                 new Location(i, textStart, textEnd, j)
+                        ));
+                    }
+                    if (run.isItalic()) {
+                        errors.add(new StructuralElementItalicError(
+                                structuralElement,
+                                "Заголовок структурного элемента не должен быть выделен курсивом",
+                                new Location(i, textStart, textEnd, j)
+
+                        ));
+                    }
+                    if (run.getUnderline() != UnderlinePatterns.NONE) {
+                        errors.add(new StructuralElementItalicError(
+                                structuralElement,
+                                "Заголовок структурного элемента не должен быть подчёркнут",
+                                new Location(i, textStart, textEnd, j)
+
                         ));
                     }
                     textStart = textEnd;

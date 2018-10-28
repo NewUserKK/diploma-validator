@@ -60,7 +60,11 @@ public class Fixer {
                 } else {
                     var paragraphs = document.getParagraphs();
                     if (!paragraphs.isEmpty()) {
-                        ((Critical) error).fix(paragraphs.get(0).createRun());
+                        if (!paragraphs.get(0).getRuns().isEmpty()) {
+                            ((Critical) error).fix(paragraphs.get(0).getRuns().get(0));
+                        } else {
+                            ((Critical) error).fix(paragraphs.get(0).createRun());
+                        }
                     }
                 }
             }
