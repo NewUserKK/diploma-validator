@@ -3,3 +3,4 @@ lib/
 target/
 *.iml
 .DS_Store
+out.docx

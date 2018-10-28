@@ -1,6 +1,7 @@
 package com.wa285.validator;
 
 import com.wa285.validator.parser.ElementSize;
+import com.wa285.validator.parser.Fixer;
 import com.wa285.validator.parser.Parser;
 import org.apache.poi.xwpf.usermodel.BodyElementType;
 import org.apache.poi.xwpf.usermodel.XWPFDocument;
@@ -25,7 +26,10 @@ public class LibTest {
         var test = new LibTest();
         var doc = test.getDocument("Test.docx");
         var parser = new Parser(doc);
-        System.out.println(parser.findErrors().stream().map(Object::toString)
+        var errors = parser.findErrors();
+        System.out.println(errors.stream().map(Object::toString)
                 .collect(Collectors.joining("\n")));
+        var fixer = new Fixer(doc, errors);
+        fixer.writeToFile(new File("out.docx"));
     }
 }

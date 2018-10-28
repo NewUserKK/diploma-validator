@@ -6,10 +6,7 @@ import com.wa285.validator.parser.errors.critical.*;
 import org.apache.poi.xwpf.usermodel.XWPFDocument;
 import org.apache.poi.xwpf.usermodel.XWPFRun;
 
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.IOException;
-import java.io.InputStream;
+import java.io.*;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -19,11 +16,11 @@ public class Fixer {
     private final XWPFDocument document;
 
 
-    public Fixer(File file, ArrayList<Error> errors) throws IOException {
+    public Fixer(File file, List<Error> errors) throws IOException {
         this(new FileInputStream(file), errors);
     }
 
-    public Fixer(InputStream is, ArrayList<Error> errors) throws IOException {
+    public Fixer(InputStream is, List<Error> errors) throws IOException {
         this.errors = errors;
         try {
             this.document = new XWPFDocument(is);
@@ -36,6 +33,19 @@ public class Fixer {
         fixAll();
     }
 
+    public Fixer(XWPFDocument document, List<Error> errors) throws IOException {
+        this.document = document;
+        this.errors = errors;
+        fixAll();
+    }
+
+    public void writeToFile(File file) throws IOException {
+        FileOutputStream out = new FileOutputStream(file.getName());
+        document.write(out);
+        out.close();
+        document.close();
+    }
+
     private void fixAll() {
         List<List<XWPFRun>> runs = new ArrayList<>();   //List<Paragraph>
         for (var paragraph : document.getParagraphs()) {
@@ -45,7 +55,11 @@ public class Fixer {
         for (Error error : errors) {
             if (error instanceof Critical) {
                 Location location = error.getLocation();
-                ((Critical) error).fix(runs.get(location.getParagraphNumber()).get(location.getRunNumber()));
+                if (location != null) {
+                    ((Critical) error).fix(runs.get(location.getParagraphNumber()).get(location.getRunNumber()));
+                } else {
+                    ((Critical) error).fix(runs.get(0).get(0));
+                }
             }
         }
     }
