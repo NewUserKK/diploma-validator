@@ -6,11 +6,11 @@ import com.wa285.validator.parser.errors.critical.*;
 import com.wa285.validator.parser.errors.critical.enumeration.EnumerationNumberingError;
 import com.wa285.validator.parser.errors.critical.structural.StructuralElementCenteringError;
 import com.wa285.validator.parser.errors.critical.structural.StructuralElementMissingBoldError;
-import com.wa285.validator.parser.errors.warning.DefaultSize;
 import com.wa285.validator.parser.errors.warning.MissingStructuralElementError;
 import org.apache.poi.xwpf.usermodel.ParagraphAlignment;
 import org.apache.poi.xwpf.usermodel.XWPFDocument;
 import org.apache.xmlbeans.XmlException;
+import org.openxmlformats.schemas.wordprocessingml.x2006.main.CTRPr;
 
 import java.io.*;
 import java.util.ArrayList;
@@ -44,22 +44,31 @@ public class Parser {
         this.document = document;
     }
 
-    public List<Error> findErrors() throws IOException, XmlException {
+    public List<Error> findErrors() {
         if (errors == null) {
             parse();
         }
         return errors;
     }
 
-    private void parse() throws IOException, XmlException {
+    private void parse() {
         errors = new ArrayList<>();
         checkFormat();
         checkNumeration();
     }
 
-    private void checkFormat() throws IOException, XmlException {
-        var defaultValues = document.getStyle().getDocDefaults().getRPrDefault().getRPr();
-        errors.add(new DefaultSize(defaultValues.getSz().getVal().intValue() + " " + defaultValues.getRFonts().getAscii(), null));
+    private void checkFormat() {
+        CTRPr defaultValues = null;
+        try {
+            defaultValues = document.getStyle().getDocDefaults().getRPrDefault().getRPr();
+        } catch (XmlException e) {
+            e.printStackTrace();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+
+        var defaultSize = defaultValues.getSz().getVal().intValue() / 2;
+        var defaultFont = defaultValues.getRFonts().getAscii();
 
         var margin = document.getDocument().getBody().getSectPr().getPgMar();
         var leftMargin = margin.getLeft().intValue();
@@ -106,14 +115,14 @@ public class Parser {
                 Location location = new Location(i, textStart, textEnd, j);
 
                 if (run.getColor() != null) {
-                    errors.add(new FontColorError("Шрифт должен быть чёрным: " + run.getColor() + " здесь", null));
+                    errors.add(new FontColorError("Шрифт должен быть чёрным: #" + run.getColor() + " здесь", null));
                 }
 
-                if (run.getFontName() == null || !run.getFontFamily().equals("Times New Roman")) {
+                if ((run.getFontName() == null && !defaultFont.equals("Times New Roman")) || !run.getFontFamily().equals("Times New Roman")) {
                     errors.add(new FontStyleError("Шрифт должен быть Times New Roman: " + run.getFontFamily() + " здесь", null));
                 }
 
-                if (run.getFontSize() < 12) {
+                if ((run.getFontSize() == -1 && defaultSize < 12) || run.getFontSize() < 12) {
                     errors.add(new FontSizeError("Размер шрифта должен быть не меньше 12 пт: " + run.getFontSize() + " пт здесь", location));
                 }
 
@@ -132,7 +141,7 @@ public class Parser {
      */
     private void checkStructuralElements() {
         Map<StructuralElement, Boolean> structuralElementsCheck = new HashMap<>() {{
-            for (var item: StructuralElement.values()) {
+            for (var item : StructuralElement.values()) {
                 put(item, false);
             }
         }};
@@ -167,13 +176,13 @@ public class Parser {
             }
         }
 
-        for (var item: structuralElementsCheck.keySet()) {
+        for (var item : structuralElementsCheck.keySet()) {
             errors.add(new MissingStructuralElementError(item, null));
         }
     }
 
     private StructuralElement getStructuralElement(String text) {
-        for (var elem: StructuralElement.values()) {
+        for (var elem : StructuralElement.values()) {
             if (text.equals(elem.getTitle())) {
                 return elem;
             }
@@ -196,14 +205,14 @@ public class Parser {
         final var letterPattern = Pattern.compile("^\\p{Space}*([а-я]) .*$");  // matches x)
 
         final var forbiddenLetters = new ArrayList<>() {{
-                add('ё');
-                add('з');
-                add('й');
-                add('о');
-                add('ч');
-                add('ъ');
-                add('ы');
-                add('ь');
+            add('ё');
+            add('з');
+            add('й');
+            add('о');
+            add('ч');
+            add('ъ');
+            add('ы');
+            add('ь');
         }};
 
         var paragraphs = document.getParagraphs();
@@ -241,7 +250,7 @@ public class Parser {
                 } else if (prevType == LETTER) {
                     errors.add(new EnumerationNumberingError(
                             "Inconsistent enum type",
-                            new Location(i,0, line.length())
+                            new Location(i, 0, line.length())
                     ));
                 } else {
                     throw new IllegalArgumentException("Unknown enum type");
