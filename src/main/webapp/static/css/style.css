@@ -8,7 +8,7 @@ body {
     margin-bottom: 30px;
     margin-left: 2.5%;
     margin-right: 2.5%;
-    height: 25rem;
+    height: 50rem;
     /*width: 95%;*/
     outline: none;
     background-color: #E8E8ED;
@@ -29,4 +29,12 @@ body {
 
 .download {
     margin-left: 30px;
+}
+
+.buttons footer {
+    position: fixed;
+    left: 0;
+    bottom: 5px;
+    width: 100%;
+    text-align: center;
 }

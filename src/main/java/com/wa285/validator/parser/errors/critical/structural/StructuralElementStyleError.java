@@ -8,6 +8,6 @@ import org.apache.poi.xwpf.usermodel.XWPFRun;
 public abstract class StructuralElementStyleError extends Critical {
     public StructuralElementStyleError(
             StructuralElement element, String description, Location location) {
-        super("Structural element: [[" + element.getTitle() + "]] " + description, location);
+        super("Структурный элемент: [[" + element.getTitle() + "]] " + description, location);
     }
 }

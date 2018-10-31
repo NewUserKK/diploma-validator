@@ -10,6 +10,6 @@ public class MissingStructuralElementError extends Warning {
     }
 
     public MissingStructuralElementError(StructuralElement element, Location location) {
-        super("Missing structural element: " + element.getTitle(), location);
+        super("Предупреждение: отсутствует структурный элемент - " + element.getTitle(), location);
     }
 }
